@@ -10,10 +10,7 @@ product** — not the outreach emails it happens to produce.
 Read `README.md` first, then `ARCHITECTURE.md`. Both explain the reasoning
 behind decisions that look over-engineered until you know why.
 
-## Owner context
-
-Joey has vibe-coding experience, no formal CS background, and needs to be able
-to explain this system out loud in an interview. That shapes how to work here:
+## How to work in this repo
 
 - **Explain before you change.** Say what you're about to do in plain terms and
   why, then do it.
@@ -21,8 +18,8 @@ to explain this system out loud in an interview. That shapes how to work here:
   attempt 3 optimizes against the rubric` is useful. `# loop over items` is not.
 - **Avoid unexplained magic.** If a change makes the system harder to describe
   in one sentence, it is probably the wrong change.
-- **Say when something is a judgment call**, not a fact. He needs to know which
-  parts he could defend differently.
+- **Say when something is a judgment call**, not a fact. Whoever reads this
+  needs to know which parts they could defend differently.
 
 ## Invariants — do not "fix" these
 

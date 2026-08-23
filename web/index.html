@@ -25,6 +25,67 @@
   </div>
 </header>
 
+<details class="intro" id="intro" open>
+  <summary>
+    <span class="intro-summary-text">What am I looking at?</span>
+    <span class="intro-toggle" aria-hidden="true"></span>
+  </summary>
+  <div class="intro-body">
+    <p class="intro-lede">
+      AgentDesk turns a company name into a researched outreach email using three
+      separate AI agents — but the point of this project isn't the emails. It's that
+      the pipeline is <strong>governed</strong> so it structurally cannot ship a claim
+      nobody can back up.
+    </p>
+
+    <div class="intro-pipeline">
+      <div class="intro-stage">
+        <span class="intro-stage-name">Researcher</span>
+        <span class="intro-stage-model mono">Haiku</span>
+        <span class="intro-stage-tag">web search · read-only</span>
+      </div>
+      <span class="intro-arrow" aria-hidden="true">→</span>
+      <div class="intro-stage">
+        <span class="intro-stage-name">Drafter</span>
+        <span class="intro-stage-model mono">Sonnet</span>
+        <span class="intro-stage-tag">no internet access</span>
+      </div>
+      <span class="intro-arrow" aria-hidden="true">→</span>
+      <div class="intro-stage intro-stage-model-judgment">
+        <span class="intro-stage-name">QA Reviewer</span>
+        <span class="intro-stage-model mono">Opus</span>
+        <span class="intro-stage-tag">different model family · can't edit</span>
+      </div>
+    </div>
+
+    <div class="intro-gates">
+      <div class="intro-gates-label">Five checkpoints stand between a company name and a human inbox — only one is a model:</div>
+      <ol class="intro-gates-list">
+        <li><span class="shape code" aria-hidden="true"></span><b>Prompt contract</b> — each agent's rules of engagement</li>
+        <li><span class="shape code" aria-hidden="true"></span><b>Schema validation</b> — malformed output is rejected, never retried</li>
+        <li><span class="shape code" aria-hidden="true"></span><b>Deterministic checks</b> — word count, banned phrases, every claim traced to a source</li>
+        <li><span class="shape model" aria-hidden="true"></span><b>Adversarial review</b> — the one model judgment call, scored against the brief</li>
+        <li><span class="shape code" aria-hidden="true"></span><b>Release decision</b> — recomputed in code; the reviewer's own verdict is advisory</li>
+      </ol>
+    </div>
+
+    <div class="intro-callout">
+      <b>ESCALATED and HALTED are success states, not errors.</b> If research comes up
+      thin, the pipeline refuses to draft rather than invent facts — that's a halt. If
+      the reviewer keeps blocking a draft after the retry budget runs out, the system
+      routes it to a human instead of quietly lowering the bar — that's an escalation.
+      Both mean a gate did its job.
+    </div>
+
+    <p class="intro-eval">
+      <b>Quality gate, measured honestly:</b> on a small 14-case mutation harness,
+      deterministic code alone catches 10 of 14 bad drafts at zero false positives.
+      The remaining four need a model's judgment call to catch, and that measurement
+      hasn't been run yet — stated here as a limitation, not rounded up.
+    </p>
+  </div>
+</details>
+
 <div class="shell">
   <nav class="run-list" id="run-list" aria-label="Recorded runs">
     <div class="run-list-head">

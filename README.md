@@ -195,6 +195,14 @@ The retry budget (2 revisions) ran out, and the run escalated to a human queue
 rather than lowering the threshold. Nobody scripted that outcome — it's what
 the gate did under real pressure. See it in [`web/index.html`](web/index.html).
 
+**That run's own claim text, draft body, and QA flag detail are gone.** The
+code that printed and persisted full pipeline detail (`print_audit()`, plus
+the `runs.jsonl` fields it now writes) was added *after* this run executed —
+it existed only in memory, and the process exited before anything captured
+it. Only the gate sequence survived. The lesson: detailed logging has to
+exist before the run you'll want it for, not after. You don't get to choose
+in advance which run turns out to be the one worth showing.
+
 **Then the account ran out of credit**, mid-way through what would have been
 the furthest-reaching live run yet. Two planned phases — running all four
 scenarios live, and measuring the QA reviewer against the four eval cases

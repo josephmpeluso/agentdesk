@@ -116,17 +116,20 @@ class RunRecord:
     started_at: float
     gates: list[GateResult] = field(default_factory=list)
     attempts: int = 0
-    outcome: str = "incomplete"     # released | escalated | halted | rejected
+    outcome: str = "incomplete"     # released | escalated | halted | rejected | interrupted
     score: int | None = None
     cost_usd: float = 0.0
     tokens_in: int = 0
     tokens_out: int = 0
-    # Kept off the audit log (runs.jsonl); only for terminal display. Held
-    # regardless of outcome so a REJECTED/ESCALATED/HALTED run can still show
-    # what the agents actually produced, not just which gate stopped it.
-    last_brief: dict | None = None
-    last_draft: dict | None = None
-    last_verdict: dict | None = None
+    # Full agent output, persisted to runs.jsonl for every terminal state —
+    # this is what makes the log a self-contained audit record instead of a
+    # gate-pass/fail summary. drafts/verdicts are lists, one entry per retry
+    # attempt: an earlier version of this file kept only the *last* draft and
+    # verdict, which silently discarded every earlier attempt's actual text
+    # in memory, before a crash could even be the reason detail was lost.
+    brief: dict | None = None
+    drafts: list[dict] = field(default_factory=list)
+    verdicts: list[dict] = field(default_factory=list)
 
     def gate(self, name: str, passed: bool, detail: str = "") -> bool:
         self.gates.append(GateResult(name, passed, detail))
@@ -136,8 +139,6 @@ class RunRecord:
 
     def to_json(self) -> str:
         d = asdict(self)
-        for k in ("last_brief", "last_draft", "last_verdict"):
-            d.pop(k, None)
         d["duration_s"] = round(time.time() - self.started_at, 2)
         return json.dumps(d)
 
@@ -418,7 +419,7 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
         "Produce the research_brief.",
         "research_brief",
     )
-    record.last_brief = brief
+    record.brief = brief
 
     ok, detail = validate_schema(brief, "research_brief.schema.json")
     if not record.gate("schema:research_brief", ok, detail):
@@ -459,7 +460,7 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
         )
         step = "draft_package" if attempt == 1 else f"draft_package_r{attempt - 1}"
         draft = agent("drafter", prompt, step if not dry or step in fixtures else "draft_package", attempt)
-        record.last_draft = draft
+        record.drafts.append(draft)
 
         ok, detail = validate_schema(draft, "draft_package.schema.json")
         if not record.gate("schema:draft_package", ok, detail):
@@ -484,7 +485,7 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
                 ],
                 "swap_test": {"redacted_body": "", "still_coherent": False},
             }
-            record.last_verdict = verdict
+            record.verdicts.append(verdict)
             print("  [INFO] skipping QA call — deterministic gate already rejected")
             if attempt <= MAX_REVISIONS:
                 continue
@@ -501,7 +502,7 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
             vstep if not dry or vstep in fixtures else "qa_verdict",
             attempt,
         )
-        record.last_verdict = verdict
+        record.verdicts.append(verdict)
 
         ok, detail = validate_schema(verdict, "qa_verdict.schema.json")
         if not record.gate("schema:qa_verdict", ok, detail):
@@ -514,7 +515,6 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
 
         if released:
             record.outcome = "released"
-            record.last_draft = draft
             return record
 
         if attempt <= MAX_REVISIONS:
@@ -534,13 +534,15 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
 def print_audit(record: RunRecord) -> None:
     """Show what the agents actually produced, regardless of terminal state.
 
-    A REJECTED or ESCALATED run is still a real result with real content
-    behind it — the researcher's sourced claims, the draft that was tried,
-    the reviewer's reasoning. Hiding that behind a bare gate name is how a
-    status file starts drifting from what actually happened.
+    A REJECTED, ESCALATED, or INTERRUPTED run is still a real result with
+    real content behind it — the researcher's sourced claims, every draft
+    that was tried, every verdict the reviewer gave. Hiding that behind a
+    bare gate name is how a status file starts drifting from what actually
+    happened. This prints every attempt, not just the last one that survived
+    in memory.
     """
-    brief, draft, verdict = record.last_brief, record.last_draft, record.last_verdict
-    if not any([brief, draft, verdict]):
+    brief = record.brief
+    if not any([brief, record.drafts, record.verdicts]):
         return
 
     print("\n" + "=" * 68)
@@ -564,30 +566,45 @@ def print_audit(record: RunRecord) -> None:
         if brief.get("gaps"):
             print(f"  gaps: {'; '.join(brief['gaps'])}")
 
-    if draft and draft.get("draftable", True) and draft.get("email"):
-        e = draft["email"]
-        print(f"\nDRAFTER — attempt {draft.get('run_meta', {}).get('attempt', '?')}")
-        print(f"  Subject: {e.get('subject')}")
-        print("  " + e.get("body", "").replace("\n", "\n  "))
-        ab = draft.get("account_brief", {})
-        if ab.get("what_i_dont_know"):
-            print("  What I don't know:")
-            for gap in ab["what_i_dont_know"]:
-                print(f"    · {gap}")
-    elif draft and not draft.get("draftable", True):
-        print(f"\nDRAFTER — declined: {draft.get('blocker', '(no reason given)')}")
+    # drafts and verdicts are parallel lists in the common case (each
+    # attempt produces a draft, and either a real or synthetic verdict), but
+    # a run can die mid-attempt — a drafter call that crashed produces a
+    # draft with no matching verdict. Walk by index rather than zip so a
+    # missing verdict prints as missing instead of misaligning with the next
+    # attempt's draft.
+    n = max(len(record.drafts), len(record.verdicts))
+    for i in range(n):
+        draft = record.drafts[i] if i < len(record.drafts) else None
+        verdict = record.verdicts[i] if i < len(record.verdicts) else None
 
-    if verdict:
-        print(f"\nQA-REVIEWER — score {verdict.get('score')} (threshold {PASS_SCORE})")
-        for f in verdict.get("flags", []):
-            print(f"  [{f.get('severity')}] {f.get('type')}: {str(f.get('location', ''))[:100]}")
-            if f.get("remediation"):
-                print(f"      fix: {f['remediation'][:100]}")
-        st = verdict.get("swap_test", {})
-        if st:
-            print(f"  swap test — still coherent after redaction: {st.get('still_coherent')}")
-        if verdict.get("notes"):
-            print(f"  notes: {verdict['notes']}")
+        if draft and draft.get("draftable", True) and draft.get("email"):
+            e = draft["email"]
+            print(f"\nDRAFTER — attempt {i + 1}")
+            print(f"  Subject: {e.get('subject')}")
+            print("  " + e.get("body", "").replace("\n", "\n  "))
+            ab = draft.get("account_brief", {})
+            if ab.get("what_i_dont_know"):
+                print("  What I don't know:")
+                for gap in ab["what_i_dont_know"]:
+                    print(f"    · {gap}")
+        elif draft and not draft.get("draftable", True):
+            print(f"\nDRAFTER — attempt {i + 1} — declined: {draft.get('blocker', '(no reason given)')}")
+        elif verdict is not None:
+            print(f"\nDRAFTER — attempt {i + 1} — no draft on record")
+
+        if verdict:
+            print(f"QA-REVIEWER — attempt {i + 1} — score {verdict.get('score')} (threshold {PASS_SCORE})")
+            for f in verdict.get("flags", []):
+                print(f"  [{f.get('severity')}] {f.get('type')}: {str(f.get('location', ''))[:100]}")
+                if f.get("remediation"):
+                    print(f"      fix: {f['remediation'][:100]}")
+            st = verdict.get("swap_test", {})
+            if st:
+                print(f"  swap test — still coherent after redaction: {st.get('still_coherent')}")
+            if verdict.get("notes"):
+                print(f"  notes: {verdict['notes']}")
+        elif draft:
+            print(f"QA-REVIEWER — attempt {i + 1} — not reached")
 
     print("\n" + "=" * 68)
     print(f"TERMINAL STATE: {record.outcome.upper()}")
@@ -624,23 +641,40 @@ def main() -> int:
         print(f"DRY RUN — scenario: {args.scenario}")
     print("=" * 68)
 
+    # run_pipeline mutates `record` in place, so everything it completed
+    # before any exception — the brief, every draft and verdict tried so
+    # far — is already sitting on this object regardless of how the call
+    # below ends. The `finally` block is what turns that into a guarantee:
+    # it runs on a clean return, on a ContractError, and on anything else
+    # (a network failure, a rate limit, the credit-exhaustion error that
+    # lost this project's best run last session, Ctrl+C) — nothing is held
+    # in memory until a normal exit that might never come.
     try:
-        record = run_pipeline(company, args.domain, fixtures, record)
-    except ContractError as e:
-        record.gate("contract", False, str(e))
-        record.outcome = "rejected"
+        try:
+            record = run_pipeline(company, args.domain, fixtures, record)
+        except ContractError as e:
+            record.gate("contract", False, str(e))
+            record.outcome = "rejected"
+        except BaseException as e:
+            # Not a gate decision — the process itself failed to complete.
+            # Tag what happened, keep the outcome distinct from the four
+            # gate-driven terminal states, then re-raise so the failure is
+            # still visible on the terminal and the exit code stays honest.
+            record.gate("infrastructure", False, f"{type(e).__name__}: {e}")
+            record.outcome = "interrupted"
+            raise
+    finally:
+        print_audit(record)
 
-    print_audit(record)
+        print("\n" + "-" * 68)
+        print(f"OUTCOME: {record.outcome.upper()}   attempts: {record.attempts}   score: {record.score}")
+        if record.tokens_in or record.tokens_out:
+            print(f"tokens: {record.tokens_in} in / {record.tokens_out} out")
+        print("-" * 68)
 
-    print("\n" + "-" * 68)
-    print(f"OUTCOME: {record.outcome.upper()}   attempts: {record.attempts}   score: {record.score}")
-    if record.tokens_in or record.tokens_out:
-        print(f"tokens: {record.tokens_in} in / {record.tokens_out} out")
-    print("-" * 68)
-
-    with open(args.log, "a", encoding="utf-8") as fh:
-        fh.write(record.to_json() + "\n")
-    print(f"logged to {args.log}")
+        with open(args.log, "a", encoding="utf-8") as fh:
+            fh.write(record.to_json() + "\n")
+        print(f"logged to {args.log}")
 
     return 0 if record.outcome in ("released", "halted") else 1
 

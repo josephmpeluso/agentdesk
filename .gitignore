@@ -10,7 +10,12 @@ __pycache__/
 .venv/
 venv/
 
-# Local scratch
+# Netlify CLI local site-link state — machine-specific, not for version control
+.netlify/
+
+# Local scratch — throwaway debug/test scripts, never meant to be committed
 _debug_*.py
 _debug_*.txt
+_test_*.py
+_test_*.jsonl
 *.log
