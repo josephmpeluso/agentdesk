@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentdesk/contracts/qa_verdict.schema.json",
+  "title": "qa_verdict",
+  "description": "Output contract for the QA reviewer. The orchestrator, not the model, enforces the pass rule.",
+  "type": "object",
+  "required": ["score", "pass", "flags", "swap_test", "run_meta"],
+  "additionalProperties": false,
+  "properties": {
+    "score": { "type": "integer", "minimum": 1, "maximum": 10 },
+    "pass": {
+      "type": "boolean",
+      "description": "Advisory only. The orchestrator recomputes this as (score >= 8 AND no blocking flags) and overrides disagreement."
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "severity", "location", "remediation"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["unsupported_claim", "claim_drift", "generic", "constraint", "tone", "safety", "compliance"]
+          },
+          "severity": { "type": "string", "enum": ["blocking", "major", "minor"] },
+          "location": { "type": "string", "description": "Verbatim quote of the offending text." },
+          "remediation": { "type": "string", "description": "Actionable instruction for the drafter. Fed into the retry prompt." }
+        }
+      }
+    },
+    "swap_test": {
+      "type": "object",
+      "required": ["redacted_body", "still_coherent"],
+      "additionalProperties": false,
+      "properties": {
+        "redacted_body": { "type": "string" },
+        "still_coherent": {
+          "type": "boolean",
+          "description": "True means the email survives having its specifics removed, which means it is a template. True is a failure."
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Reviewer-to-human channel for pipeline problems as opposed to document problems."
+    },
+    "run_meta": {
+      "type": "object",
+      "required": ["agent", "model", "attempt"],
+      "additionalProperties": true,
+      "properties": {
+        "agent": { "type": "string", "const": "qa-reviewer" },
+        "model": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "latency_ms": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

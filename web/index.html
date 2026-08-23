@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgentDesk — Audit Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">AD</span>
+      <div class="brand-text">
+        <span class="brand-name">AgentDesk</span>
+        <span class="brand-sub">audit viewer</span>
+      </div>
+    </div>
+    <p class="thesis">Evidence that a three-agent pipeline can be governed so it cannot ship a confident lie.</p>
+    <div class="model-key" id="model-key" aria-label="Model assignments"></div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="run-list" id="run-list" aria-label="Recorded runs">
+    <div class="run-list-head">
+      <h2>Runs</h2>
+      <span class="run-count" id="run-count"></span>
+    </div>
+    <div class="run-list-items" id="run-list-items"></div>
+  </nav>
+
+  <main class="detail" id="detail">
+    <!-- populated by app.js -->
+  </main>
+</div>
+
+<footer class="foot">
+  <span>Static audit viewer · reads <code>data/runs.js</code> · no server, no build step, no live API calls</span>
+</footer>
+
+<script src="data/runs.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

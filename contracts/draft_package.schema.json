@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentdesk/contracts/draft_package.schema.json",
+  "title": "draft_package",
+  "description": "Output contract for the drafter agent. claim_refs is the mechanism that makes QA checkable in code rather than by judgment.",
+  "type": "object",
+  "required": ["draftable", "claim_refs", "run_meta"],
+  "additionalProperties": false,
+  "properties": {
+    "draftable": {
+      "type": "boolean",
+      "description": "False when the brief is too thin to draft from. A legitimate terminal state, not an error."
+    },
+    "blocker": {
+      "type": "string",
+      "description": "Required when draftable is false. Explains what was missing."
+    },
+    "email": {
+      "type": "object",
+      "required": ["subject", "body", "word_count"],
+      "additionalProperties": false,
+      "properties": {
+        "subject": { "type": "string", "maxLength": 60 },
+        "body": {
+          "type": "string",
+          "description": "Body with inline [cN] claim references retained. The delivery step strips them."
+        },
+        "word_count": { "type": "integer", "minimum": 110, "maximum": 130 }
+      }
+    },
+    "account_brief": {
+      "type": "object",
+      "required": ["who_they_are", "why_now", "the_wedge", "what_i_dont_know", "opening_question", "word_count"],
+      "additionalProperties": false,
+      "properties": {
+        "who_they_are": { "type": "string" },
+        "why_now": { "type": "string" },
+        "the_wedge": { "type": "string" },
+        "what_i_dont_know": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "Mandatory. The most useful section on a live call."
+        },
+        "opening_question": { "type": "string" },
+        "word_count": { "type": "integer", "minimum": 200, "maximum": 300 }
+      }
+    },
+    "claim_refs": {
+      "type": "array",
+      "description": "Every claim_id the drafter relied on. Orchestrator verifies each exists in the brief and each factual sentence carries one.",
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "used_in"],
+        "additionalProperties": false,
+        "properties": {
+          "claim_id": { "type": "string", "pattern": "^c[0-9]+$" },
+          "used_in": { "type": "string", "enum": ["email", "account_brief", "both"] }
+        }
+      }
+    },
+    "run_meta": {
+      "type": "object",
+      "required": ["agent", "model", "attempt"],
+      "additionalProperties": true,
+      "properties": {
+        "agent": { "type": "string", "const": "drafter" },
+        "model": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "revision_of": { "type": ["string", "null"] },
+        "latency_ms": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

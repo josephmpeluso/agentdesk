@@ -1,0 +1,575 @@
+{
+  "name": "AgentDesk \u2014 Outreach Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agentdesk",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "intake",
+      "name": "Intake",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        300
+      ],
+      "webhookId": "agentdesk-intake"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// System prompts live here so the workflow is self-contained on import.\n// In production these are read from the skills/ directory at deploy time so\n// the n8n copy and the CLI copy cannot drift apart.\nreturn [{ json: {\n  researcher: 'PASTE skills/researcher/SKILL.md BODY HERE',\n  drafter:    'PASTE skills/drafter/SKILL.md BODY HERE',\n  qa:         'PASTE skills/qa-reviewer/SKILL.md BODY HERE',\n  company: $('Intake').first().json.body.company,\n  domain:  $('Intake').first().json.body.domain || 'unknown',\n} }];\n"
+      },
+      "id": "load-skills",
+      "name": "Load Skills",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.ANTHROPIC_API_KEY }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 4000, system: $('Load Skills').first().json.researcher, messages: [{ role: 'user', content: 'Company: ' + $('Load Skills').first().json.company + '\\nKnown domain: ' + $('Load Skills').first().json.domain + '\\n\\nProduce the research_brief.' }] }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "researcher",
+      "name": "Researcher",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -60,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Parse the researcher's reply, then run Gate 2 (structure) and the\n// provenance check. Anything that fails here never reaches the drafter.\nconst raw = $input.first().json.content.map(b => b.text || '').join('').trim();\nconst cleaned = raw.replace(/^```(?:json)?/gm, '').replace(/```$/gm, '').trim();\n\nlet brief;\ntry {\n  brief = JSON.parse(cleaned);\n} catch (e) {\n  return [{ json: { fatal: true, stage: 'researcher', reason: 'unparseable JSON: ' + e.message } }];\n}\n\nconst required = ['company', 'insufficient_evidence', 'claims', 'gaps'];\nconst missing = required.filter(k => !(k in brief));\nif (missing.length) {\n  return [{ json: { fatal: true, stage: 'researcher', reason: 'missing keys: ' + missing.join(', ') } }];\n}\n\n// Provenance: every claim must carry a real retrieved URL.\nconst unsourced = (brief.claims || []).filter(c => !/^https?:\\/\\//.test(c.source_url || ''));\nif (unsourced.length) {\n  return [{ json: { fatal: true, stage: 'researcher',\n    reason: 'unsourced claims: ' + unsourced.map(c => c.claim_id).join(', ') } }];\n}\n\n// Low-confidence claims are stripped here, not left to the drafter's restraint.\nconst drafterBrief = { ...brief, claims: (brief.claims || []).filter(c => c.confidence !== 'low') };\n\nreturn [{ json: {\n  fatal: false,\n  sufficient: brief.insufficient_evidence !== true,\n  brief,\n  drafterBrief,\n  attempt: 1,\n  company: brief.company,\n} }];\n"
+      },
+      "id": "validate-brief",
+      "name": "Validate Brief",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        140,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "evidence-sufficient?-cond",
+              "leftValue": "={{ $json.sufficient && !$json.fatal }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "evidence-sufficient?",
+      "name": "Evidence Sufficient?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.ANTHROPIC_API_KEY }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 4000, system: $('Load Skills').first().json.drafter, messages: [{ role: 'user', content: $json.drafterPrompt || ('RESEARCH BRIEF:\\n' + JSON.stringify($json.drafterBrief) + '\\n\\nProduce the draft_package.') }] }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "drafter",
+      "name": "Drafter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Gate 3. Deterministic checks, run before spending a QA call.\n// Mirrors orchestrator/run.py:deterministic_checks \u2014 keep them in sync.\nconst state = $('Validate Brief').first().json;\nconst raw = $input.first().json.content.map(b => b.text || '').join('').trim();\nconst cleaned = raw.replace(/^```(?:json)?/gm, '').replace(/```$/gm, '').trim();\n\nlet draft;\ntry { draft = JSON.parse(cleaned); }\ncatch (e) { return [{ json: { ...state, fatal: true, stage: 'drafter', reason: 'unparseable JSON' } }]; }\n\nif (draft.draftable === false) {\n  return [{ json: { ...state, draft, halted: true, reason: draft.blocker || 'drafter declined' } }];\n}\n\nconst BANNED = [\"i hope this email finds you well\",\"i hope you're doing well\",\n  \"i hope this finds you well\",\"i came across your company\",\"i wanted to reach out\",\n  \"in today's fast-paced\",\"game-changer\",\"game changer\",\"revolutionize\",\n  \"leverage synergies\",\"circle back\",\"just following up\",\"i'll cut to the chase\",\n  \"as you may know\",\"touch base\",\"at the end of the day\"];\n\nconst body = (draft.email && draft.email.body) || '';\nconst refRe = /\\[(c\\d+)\\]/g;\nconst words = body.replace(refRe, '').split(/\\s+/).filter(Boolean).length;\nconst problems = [];\n\nif (Math.abs(words - 120) > 10) problems.push(`word_count: ${words}, must be 120\u00b110`);\nconst declaredWc = draft.email && draft.email.word_count;\nif (declaredWc && Math.abs(declaredWc - words) > 3)\n  problems.push(`word_count_selfreport: claimed ${declaredWc}, actual ${words}`);\n\nconst low = body.toLowerCase();\nBANNED.forEach(p => { if (low.includes(p)) problems.push(`banned_phrase: '${p}'`); });\n\nconst subject = (draft.email && draft.email.subject) || '';\nif (!subject) problems.push('subject: missing');\nelse if (subject.length > 60) problems.push(`subject: ${subject.length} chars, max 60`);\n\nconst validIds = new Set((state.brief.claims || []).map(c => c.claim_id));\nconst lowConf = new Set((state.brief.claims || []).filter(c => c.confidence === 'low').map(c => c.claim_id));\nconst declared = new Set((draft.claim_refs || []).map(r => r.claim_id));\nconst used = new Set([...body.matchAll(/\\[(c\\d+)\\]/g)].map(m => m[1]));\n\nconst dangling = [...used].filter(id => !validIds.has(id));\nif (dangling.length) problems.push(`dangling_claim_ref: ${dangling.join(', ')}`);\nconst undeclared = [...used].filter(id => !declared.has(id));\nif (undeclared.length) problems.push(`undeclared_claim_ref: ${undeclared.join(', ')}`);\nif (used.size === 0) problems.push('no_claim_refs: asserts facts with zero references');\nconst leaked = [...used].filter(id => lowConf.has(id));\nif (leaked.length) problems.push(`low_confidence_leak: ${leaked.join(', ')}`);\n\nconst ab = draft.account_brief || {};\nif (!ab.what_i_dont_know || ab.what_i_dont_know.length === 0)\n  problems.push(\"account_brief: 'what_i_dont_know' is mandatory and empty\");\n\nreturn [{ json: { ...state, draft, deterministicPass: problems.length === 0, problems } }];\n"
+      },
+      "id": "deterministic-checks",
+      "name": "Deterministic Checks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "deterministic-pass?-cond",
+              "leftValue": "={{ $json.deterministicPass && !$json.halted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "deterministic-pass?",
+      "name": "Deterministic Pass?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $env.ANTHROPIC_API_KEY }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-opus-4-5', max_tokens: 4000, system: $('Load Skills').first().json.qa, messages: [{ role: 'user', content: 'RESEARCH BRIEF:\\n' + JSON.stringify($json.drafterBrief) + '\\n\\nDRAFT PACKAGE:\\n' + JSON.stringify($json.draft) + '\\n\\nProduce the qa_verdict.' }] }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "qa-reviewer",
+      "name": "QA Reviewer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1160,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Gates 4 and 5. The reviewer's own `pass` field is advisory; the decision is\n// recomputed here. A gate a model can talk its way past is not a gate.\nconst state = $('Deterministic Checks').first().json;\nconst raw = $input.first().json.content.map(b => b.text || '').join('').trim();\nconst cleaned = raw.replace(/^```(?:json)?/gm, '').replace(/```$/gm, '').trim();\n\nlet verdict;\ntry { verdict = JSON.parse(cleaned); }\ncatch (e) { return [{ json: { ...state, fatal: true, stage: 'qa', reason: 'unparseable JSON' } }]; }\n\nconst score = verdict.score || 0;\nconst blocking = (verdict.flags || []).filter(f => f.severity === 'blocking');\nconst swapFailed = verdict.swap_test && verdict.swap_test.still_coherent === true;\n\nlet released = true;\nlet reason = `score ${score}, no blocking flags`;\nif (swapFailed) { released = false; reason = 'swap test: email survives redaction, it is a template'; }\nelse if (blocking.length) { released = false; reason = `${blocking.length} blocking flag(s)`; }\nelse if (score < 8) { released = false; reason = `score ${score} below threshold 8`; }\nelse if (verdict.pass === false) { released = false; reason = 'reviewer overrode a passing score'; }\n\nconst attempt = state.attempt || 1;\nconst budgetLeft = attempt <= 2;\n\nreturn [{ json: { ...state, verdict, score, released, reason, attempt,\n  retry: !released && budgetLeft,\n  escalate: !released && !budgetLeft } }];\n"
+      },
+      "id": "release-decision",
+      "name": "Release Decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "released?-cond",
+              "leftValue": "={{ $json.released }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "released?",
+      "name": "Released?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1560,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Strip the [cN] references for the sendable copy, but keep the annotated\n// version and the full audit chain attached to the record.\nconst s = $input.first().json;\nconst body = s.draft.email.body.replace(/\\s*\\[c\\d+\\]/g, '');\nreturn [{ json: {\n  outcome: 'released',\n  company: s.company,\n  attempts: s.attempt,\n  score: s.score,\n  subject: s.draft.email.subject,\n  body,\n  annotated_body: s.draft.email.body,\n  account_brief: s.draft.account_brief,\n  audit: { brief: s.brief, verdict: s.verdict },\n} }];\n"
+      },
+      "id": "deliver",
+      "name": "Deliver",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "retry-budget-left?-cond",
+              "leftValue": "={{ $json.retry }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "retry-budget-left?",
+      "name": "Retry Budget Left?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1780,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Builds the revision prompt from QA flags (or from deterministic problems,\n// when the draft never reached QA) and increments the attempt counter.\nconst s = $input.first().json;\nconst flags = (s.verdict && s.verdict.flags) || [];\n\nconst fixes = flags.length\n  ? flags.map(f => `- [${f.severity}] ${f.type} \u2014 ${String(f.location).slice(0,120)}\\n  FIX: ${f.remediation}`).join('\\n')\n  : (s.problems || []).map(p => `- [blocking] constraint \u2014 ${p}\\n  FIX: correct it`).join('\\n');\n\nconst prompt = [\n  'Your previous draft was rejected. Revise it.',\n  '',\n  'RESEARCH BRIEF:', JSON.stringify(s.drafterBrief, null, 2),\n  '',\n  'YOUR PREVIOUS DRAFT:', JSON.stringify(s.draft, null, 2),\n  '',\n  `QA SCORE: ${s.score === undefined ? 'n/a (rejected before QA)' : s.score} (need 8)`,\n  'REQUIRED FIXES:', fixes,\n  '',\n  'Address every fix. Do not re-litigate the flags. Do not add facts absent',\n  'from the brief. Emit a complete draft_package object.',\n].join('\\n');\n\nreturn [{ json: { ...s, attempt: (s.attempt || 1) + 1, drafterPrompt: prompt } }];\n"
+      },
+      "id": "build-revision",
+      "name": "Build Revision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Terminal state. The bar does not move to accommodate the retry budget.\nconst s = $input.first().json;\nreturn [{ json: {\n  outcome: 'escalated',\n  company: s.company,\n  attempts: s.attempt,\n  final_score: s.score,\n  reason: s.reason,\n  flags: (s.verdict && s.verdict.flags) || s.problems,\n  draft: s.draft,\n  brief: s.brief,\n  message: 'Retry budget exhausted. Routed to the human queue rather than lowering the threshold.',\n} }];\n"
+      },
+      "id": "escalate-to-human",
+      "name": "Escalate to Human",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst s = $input.first().json;\nreturn [{ json: {\n  outcome: s.fatal ? 'rejected' : 'halted',\n  company: s.company || (s.brief && s.brief.company),\n  reason: s.reason || 'insufficient evidence to draft from',\n  gaps: (s.brief && s.brief.gaps) || [],\n  message: 'Stopped before drafting. Declining to build outreach on thin evidence is the intended behavior.',\n} }];\n"
+      },
+      "id": "halt",
+      "name": "Halt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        460
+      ]
+    }
+  ],
+  "connections": {
+    "Intake": {
+      "main": [
+        [
+          {
+            "node": "Load Skills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Skills": {
+      "main": [
+        [
+          {
+            "node": "Researcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Researcher": {
+      "main": [
+        [
+          {
+            "node": "Validate Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Brief": {
+      "main": [
+        [
+          {
+            "node": "Evidence Sufficient?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evidence Sufficient?": {
+      "main": [
+        [
+          {
+            "node": "Drafter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Halt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drafter": {
+      "main": [
+        [
+          {
+            "node": "Deterministic Checks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deterministic Checks": {
+      "main": [
+        [
+          {
+            "node": "Deterministic Pass?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deterministic Pass?": {
+      "main": [
+        [
+          {
+            "node": "QA Reviewer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retry Budget Left?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "QA Reviewer": {
+      "main": [
+        [
+          {
+            "node": "Release Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Release Decision": {
+      "main": [
+        [
+          {
+            "node": "Released?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Released?": {
+      "main": [
+        [
+          {
+            "node": "Deliver",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retry Budget Left?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Budget Left?": {
+      "main": [
+        [
+          {
+            "node": "Build Revision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escalate to Human",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Revision": {
+      "main": [
+        [
+          {
+            "node": "Drafter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "agentdesk"
+  },
+  "tags": [
+    {
+      "name": "agentdesk"
+    }
+  ]
+}

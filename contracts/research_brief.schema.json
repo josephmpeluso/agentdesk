@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentdesk/contracts/research_brief.schema.json",
+  "title": "research_brief",
+  "description": "Output contract for the researcher agent. Every downstream stage reads this and nothing else.",
+  "type": "object",
+  "required": ["company", "resolved_domain", "insufficient_evidence", "claims", "gaps", "run_meta"],
+  "additionalProperties": false,
+  "properties": {
+    "company": { "type": "string", "minLength": 1 },
+    "resolved_domain": {
+      "type": "string",
+      "description": "Domain actually confirmed during research. Guards against same-name entity confusion."
+    },
+    "insufficient_evidence": {
+      "type": "boolean",
+      "description": "True if any of the three required findings could not be sourced. Halts the pipeline before drafting."
+    },
+    "what_they_sell": {
+      "type": "object",
+      "required": ["summary", "claim_id"],
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "type": "string", "maxLength": 300 },
+        "claim_id": { "type": "string", "pattern": "^c[0-9]+$" }
+      }
+    },
+    "recent_news": {
+      "type": "object",
+      "required": ["summary", "published_date", "claim_id"],
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "type": "string", "maxLength": 300 },
+        "published_date": { "type": "string", "format": "date" },
+        "claim_id": { "type": "string", "pattern": "^c[0-9]+$" }
+      }
+    },
+    "marketing_task": {
+      "type": "object",
+      "required": ["description", "why_ai_helps", "evidence_type", "claim_id"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string", "maxLength": 400 },
+        "why_ai_helps": { "type": "string", "maxLength": 400 },
+        "evidence_type": {
+          "type": "string",
+          "enum": ["job_posting", "content_cadence", "product_surface", "support_channel", "public_statement", "site_structure"]
+        },
+        "claim_id": { "type": "string", "pattern": "^c[0-9]+$" }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "statement", "source_url", "confidence", "retrieved_at"],
+        "additionalProperties": false,
+        "properties": {
+          "claim_id": { "type": "string", "pattern": "^c[0-9]+$" },
+          "statement": { "type": "string", "minLength": 1 },
+          "source_url": { "type": "string", "pattern": "^https?://" },
+          "source_title": { "type": "string" },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+          "retrieved_at": { "type": "string", "format": "date" }
+        }
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "description": "What could not be established. Feeds the account brief's 'What I don't know' section.",
+      "items": { "type": "string" }
+    },
+    "run_meta": {
+      "type": "object",
+      "required": ["agent", "model", "attempt"],
+      "additionalProperties": true,
+      "properties": {
+        "agent": { "type": "string", "const": "researcher" },
+        "model": { "type": "string" },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "tool_calls": { "type": "integer", "minimum": 0 },
+        "latency_ms": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

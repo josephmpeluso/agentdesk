@@ -1,0 +1,591 @@
+{
+  "source": "13 live API runs against Sonos, from orchestrator/run.py, logged to runs.jsonl. No fixture/dry-run data is included in this file.",
+  "models": {
+    "researcher": "claude-haiku-4-5-20251001",
+    "drafter": "claude-sonnet-5",
+    "qa-reviewer": "claude-opus-5"
+  },
+  "default_run_id": "785069cb",
+  "runs": [
+    {
+      "run_id": "7c83b7e9",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 1123,
+      "tokens_out": 384,
+      "duration_s": 5.64,
+      "started_at": 1787450813.355359,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "6 error(s); first at <root>: 'company' is a required property"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "bc6dec3a",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 57026,
+      "tokens_out": 1536,
+      "duration_s": 22.29,
+      "started_at": 1787451026.5005548,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "1 error(s); first at what_they_sell/summary: '<cite index=\"5-1,5-2\">Sonos creates high-quality audio systems that deliver immersive sound throughout homes. With wireless speakers, soundbars, and amplifiers"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "b0a2bcd1",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 58229,
+      "tokens_out": 1702,
+      "duration_s": 29.68,
+      "started_at": 1787451151.5274181,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "2 error(s); first at marketing_task/why_ai_helps: 'AI can accelerate content creation workflow: generate initial drafts of product guides and setup tutorials from technical specs, auto-generate alternative vers"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "caae5248",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 1,
+      "tokens_in": 99084,
+      "tokens_out": 5860,
+      "duration_s": 72.63,
+      "started_at": 1787451226.5979853,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": true,
+          "detail": "conforms to research_brief.schema.json"
+        },
+        {
+          "gate": "evidence:sufficient",
+          "passed": true,
+          "detail": "5 sourced claims"
+        },
+        {
+          "gate": "provenance:all_claims_sourced",
+          "passed": true,
+          "detail": "every claim carries a retrieved URL"
+        },
+        {
+          "gate": "contract",
+          "passed": false,
+          "detail": "drafter: model returned no text content | stop_reason=max_tokens | REPLY WAS TRUNCATED — raise max_tokens | output_tokens=4000 | reply_len=0"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "a369731e",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 83147,
+      "tokens_out": 1792,
+      "duration_s": 20.87,
+      "started_at": 1787451534.008642,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "3 error(s); first at claims/2/claim_id: 'c2b' does not match '^c[0-9]+$'"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "06e8aa4d",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 95510,
+      "tokens_out": 2048,
+      "duration_s": 25.52,
+      "started_at": 1787451581.646887,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "4 error(s); first at claims/1/claim_id: 'c1b' does not match '^c[0-9]+$'"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "b43bf161",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 101885,
+      "tokens_out": 1639,
+      "duration_s": 27.03,
+      "started_at": 1787451634.948916,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "1 error(s); first at what_they_sell/summary: 'Sonos designs and sells wireless home audio systems, including speakers, soundbars, subwoofers, headphones, and components controlled via the Sonos app. Produc"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "68ec5335",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 99044,
+      "tokens_out": 1588,
+      "duration_s": 28.89,
+      "started_at": 1787451713.742634,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "2 error(s); first at claims/1/claim_id: 'c1b' does not match '^c[0-9]+$'"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "32ff8137",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 1,
+      "tokens_in": 67330,
+      "tokens_out": 16348,
+      "duration_s": 194.37,
+      "started_at": 1787451940.5416527,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": true,
+          "detail": "conforms to research_brief.schema.json"
+        },
+        {
+          "gate": "evidence:sufficient",
+          "passed": true,
+          "detail": "5 sourced claims"
+        },
+        {
+          "gate": "provenance:all_claims_sourced",
+          "passed": true,
+          "detail": "every claim carries a retrieved URL"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "contract",
+          "passed": false,
+          "detail": "qa-reviewer: no balanced JSON object found in reply | stop_reason=max_tokens | REPLY WAS TRUNCATED — raise max_tokens | output_tokens=8000 | reply_len=3157"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "ef121bc1",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": 6,
+      "attempts": 3,
+      "tokens_in": 118087,
+      "tokens_out": 29666,
+      "duration_s": 338.04,
+      "started_at": 1787452200.2998564,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": true,
+          "detail": "conforms to research_brief.schema.json"
+        },
+        {
+          "gate": "evidence:sufficient",
+          "passed": true,
+          "detail": "4 sourced claims"
+        },
+        {
+          "gate": "provenance:all_claims_sourced",
+          "passed": true,
+          "detail": "every claim carries a retrieved URL"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "score 6 below threshold 8"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": false,
+          "detail": "word_count_selfreport: model claimed 113, actual 117"
+        },
+        {
+          "gate": "contract",
+          "passed": false,
+          "detail": "drafter: model returned no text content | stop_reason=max_tokens | REPLY WAS TRUNCATED — raise max_tokens | output_tokens=8000 | reply_len=0"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Full researcher output — only the schema validator's error detail survived."
+      ],
+      "not_captured_reason": "This run was rejected at the researcher's schema gate before print_audit() existed (or, for a schema failure, before the brief could be validated at all). The model's full reply was never printed — only the schema validator's truncated error detail survived, which is what's shown here."
+    },
+    {
+      "run_id": "785069cb",
+      "company": "Sonos",
+      "outcome": "escalated",
+      "score": 5,
+      "attempts": 3,
+      "tokens_in": 88171,
+      "tokens_out": 36049,
+      "duration_s": 379.34,
+      "started_at": 1787452610.2848709,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": true,
+          "detail": "conforms to research_brief.schema.json"
+        },
+        {
+          "gate": "evidence:sufficient",
+          "passed": true,
+          "detail": "6 sourced claims"
+        },
+        {
+          "gate": "provenance:all_claims_sourced",
+          "passed": true,
+          "detail": "every claim carries a retrieved URL"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": false,
+          "detail": "word_count_selfreport: model claimed 124, actual 129"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "1 blocking flag(s): claim_drift"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "1 blocking flag(s): claim_drift"
+        }
+      ],
+      "researcher": null,
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Researcher's individual claims and source URLs — the gates confirm 6 sourced claims existed and passed provenance, but the claim text and URLs were never printed to any surviving log.",
+        "Full draft email text and [cN] claim references for all 3 attempts — the gates confirm each attempt's schema/deterministic outcome, but the actual email bodies were never printed.",
+        "QA flag location/remediation detail for both QA calls — the gates confirm the flag type (claim_drift) and blocking severity, but the specific sentence flagged and the reviewer's suggested fix were never printed."
+      ],
+      "not_captured_reason": "This run happened before print_audit() existed in orchestrator/run.py — it was added later the same session specifically because this run's rich detail was missing. Only print_artifact() existed at the time, and it only fired for outcome == 'released', so a run that escalated printed nothing beyond the terse pass/fail gate lines below. That's a real observability gap in how this run was captured, not a gap in what the pipeline did."
+    },
+    {
+      "run_id": "65de63f2",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 95101,
+      "tokens_out": 1751,
+      "duration_s": 32.32,
+      "started_at": 1787453167.2452247,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "2 error(s); first at marketing_task/description: 'Sonos publishes extensive educational content: setup guides, product documentation, quick-start materials, and dealer training content across multiple channels"
+        }
+      ],
+      "researcher": {
+        "company": "Sonos",
+        "resolved_domain": "sonos.com",
+        "what_they_sell": {
+          "claim_id": "c1",
+          "summary": "Sonos designs and manufactures wireless audio systems including speakers, soundbars, subwoofers, headphones, and amplifiers. Products sold direct-to-consumer and through retail partners. Targets both home listeners and professional installers seeking premium, connected audio for multi-room listening."
+        },
+        "recent_news": {
+          "claim_id": "c2",
+          "summary": "Announced partnership with Škoda as exclusive audio partner for the Škoda Peaq flagship electric vehicle, architecting the in-cabin listening experience from the ground up."
+        },
+        "marketing_task": {
+          "claim_id": "c3",
+          "description": "Sonos publishes extensive educational content: setup guides, product documentation, quick-start materials, and dealer training content across multiple channels. Maintains dedicated trainer network and online learning portal for installer partners. Creates automated educational journeys for new customers, showcasing system expansion benefits. This content production requires continuous updates, testing, and multi-format adaptation.",
+          "rejected_reason": "This field is 437 characters; the schema caps it at 400. This is the exact violation that rejected the run at the schema gate."
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "confidence": "high",
+            "statement": "Sonos manufactures wireless speakers, soundbars, subwoofers, headphones, and amplifiers for home and professional audio applications.",
+            "source_url": "https://www.bloomberg.com/profile/company/SONO:US"
+          },
+          {
+            "claim_id": "c2",
+            "confidence": "high",
+            "statement": "On June 23, 2026, Sonos announced partnership with Škoda to architect in-cabin listening experience for Škoda Peaq electric vehicle.",
+            "source_url": "https://newsroom.sonos.com/267365-sonos-partners-with-skoda-to-bring-premium-sound-to-the-all-new-peaq/"
+          },
+          {
+            "claim_id": "c3",
+            "confidence": "high",
+            "statement": "Sonos provides setup guides, product documentation, quick-start materials, and maintains dedicated trainer network with online learning portal for dealer partners.",
+            "source_url": "https://www.sonos.com/en-us/guides/setup"
+          },
+          {
+            "claim_id": "c4",
+            "confidence": "medium",
+            "statement": "Sonos implements automated educational journeys for new customers showing benefits of expanding speakers and subwoofers to support average ~3.0 speakers per household.",
+            "source_url": "https://businessmodelcanvastemplate.com/blogs/marketing-strategy/sonos-marketing-strategy"
+          },
+          {
+            "claim_id": "c5",
+            "confidence": "medium",
+            "statement": "Sonos maintains network of certified installers with dedicated trainers across regions and online learning portal providing continuous product and integration training.",
+            "source_url": "https://www.residentialsystems.com/features/going-forward/the-sonos-solution"
+          },
+          {
+            "claim_id": "c6",
+            "confidence": "medium",
+            "statement": "Sonos offers content marketing including website articles, guides, and playlists highlighting ecosystem benefits and music service integration.",
+            "source_url": "https://swottemplate.com/blogs/marketing-strategy/sonos-marketing-strategy"
+          }
+        ]
+      },
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Draft and QA verdict — the pipeline never reached those stages; the schema gate stopped it at the researcher, correctly."
+      ],
+      "not_captured_reason": null
+    },
+    {
+      "run_id": "0f8a2da1",
+      "company": "Sonos",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 96625,
+      "tokens_out": 1718,
+      "duration_s": 28.25,
+      "started_at": 1787453230.887977,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "1 error(s); first at marketing_task/description: 'Sonos pursues targeted influencer marketing and brand partnerships requiring extensive content coordination across campaigns. Sonos hosts luxury brand experien"
+        }
+      ],
+      "researcher": {
+        "company": "Sonos",
+        "resolved_domain": "sonos.com",
+        "what_they_sell": {
+          "claim_id": "c1",
+          "summary": "Sonos designs, develops, and sells wireless audio systems for consumers and professionals, including connected speakers, soundbars, headphones, and portable speakers sold via retail, e-commerce, and direct channels in 60+ countries."
+        },
+        "recent_news": {
+          "claim_id": "c2",
+          "summary": "Sonos announced partnership with Škoda on June 23, 2026, as audio partner for flagship Peaq electric vehicle, architecting in-cabin sound system from ground up. This marks second factory-fitted automotive audio deal."
+        },
+        "marketing_task": {
+          "claim_id": "c5",
+          "description": "Sonos pursues targeted influencer marketing and brand partnerships requiring extensive content coordination across campaigns. Sonos hosts luxury brand experiences (e.g., 2026 Dolomites trip with influencers) and manages multiple content franchises across social platforms, requiring centralized asset management, campaign briefs, and media coordination spanning lifestyle, travel, and music verticals.",
+          "rejected_reason": "This field runs past the schema's 400-character cap on marketing_task.description — the same failure mode as run 65de63f2, on a completely different angle into the same company. Two independent live runs, same specific field, same specific limit."
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "confidence": "high",
+            "statement": "Sonos designs, develops, manufactures and sells audio products and services including wireless speakers, portable speakers, home theater systems, headphones sold through third-party retailers, e-commerce, custom installers, and sonos.com.",
+            "source_url": "https://www.globaldata.com/company-profile/sonos-inc/"
+          },
+          {
+            "claim_id": "c2",
+            "confidence": "high",
+            "statement": "On June 23, 2026, Sonos announced partnership with Škoda as audio partner for flagship Peaq electric vehicle, with Sonos architecting in-cabin listening experience from ground up.",
+            "source_url": "https://newsroom.sonos.com/267365-sonos-partners-with-skoda-to-bring-premium-sound-to-the-all-new-peaq/"
+          },
+          {
+            "claim_id": "c3",
+            "confidence": "medium",
+            "statement": "Sonos pursues data-driven marketing with targeted messaging and achieved 20% increase in marketing channel ROI through better targeting.",
+            "source_url": "https://matrixbcg.com/blogs/marketing-strategy/sonos"
+          },
+          {
+            "claim_id": "c4",
+            "confidence": "high",
+            "statement": "Sonos curated luxury influencer marketing events including 2026 Dolomites brand trip with content creators, earning 53.7M impressions across platforms.",
+            "source_url": "https://www.praytellagency.com/case-studies/sonos"
+          },
+          {
+            "claim_id": "c5",
+            "confidence": "high",
+            "statement": "Sonos manages multiple social content franchises like 'Sonos in the House,' 'Where does Move take you,' and 'Home Life Still Life' series developed over multi-year periods with creative professionals and artists.",
+            "source_url": "https://imprintprojects.com/case-studies/social-strategy-and-content/"
+          },
+          {
+            "claim_id": "c6",
+            "confidence": "high",
+            "statement": "Sonos maintains comprehensive technical documentation platforms for developers including Sonos Music API (SMAPI) and support guides, suggesting ongoing content production and documentation maintenance.",
+            "source_url": "https://docs.sonos.com/docs/how-sonos-works"
+          }
+        ]
+      },
+      "draft": null,
+      "verdict": null,
+      "not_captured": [
+        "Draft and QA verdict — the pipeline never reached those stages; the schema gate stopped it at the researcher, correctly."
+      ],
+      "not_captured_reason": null
+    }
+  ]
+}

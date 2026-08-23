@@ -1,0 +1,16 @@
+# Secrets — never commit an API key
+.env
+.env.*
+*.key
+**/secrets/**
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local scratch
+_debug_*.py
+_debug_*.txt
+*.log
