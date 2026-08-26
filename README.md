@@ -12,6 +12,7 @@ pip install anthropic jsonschema
 python orchestrator/run.py --dry-run                          # releases
 python orchestrator/run.py --dry-run --scenario generic_email # blocks, revises, releases
 python orchestrator/run.py --dry-run --scenario thin_evidence # halts before drafting
+python orchestrator/run.py --dry-run --scenario escalation    # exhausts retry budget, escalates
 python evals/run_eval.py                                      # scores the gate
 ```
 
@@ -220,7 +221,7 @@ orchestrator/      run.py — gates, retry budget, run logging, dry-run fixtures
 orchestration/     importable n8n workflow (16 nodes, generated + graph-checked)
 evals/             mutation-based golden set, scorer, and results
 web/               static audit viewer over the 13 live runs — open index.html
-verticals/         the same architecture ported to device fleet triage
+verticals/         device fleet triage — the same architecture, specced not built
 ops/               runbook: metrics, cost model, failure playbooks
 ARCHITECTURE.md    why each gate exists, and what this system can't do
 STATE.md           what's built, what's verified live, what's unproven — as of today
@@ -285,6 +286,12 @@ instead of a matter of trust.
   without one ran the account dry.
 - **The four live-scenario runs and four QA-judgment eval cases are
   unmeasured.** See "What live testing found" above.
+- **No live run has ever reached `RELEASED` or `HALTED`.** Of the 13 real API
+  calls against Sonos, 12 were rejected at the researcher's schema gate and 1
+  escalated after two revisions — that's the full outcome distribution. Those
+  two terminal states are demonstrated only by the `happy_path`/`generic_email`/
+  `wordcount_violation` and `thin_evidence` dry-run fixtures, which are real
+  code paths but not live evidence that a real model, live, produces them.
 
 ---
 

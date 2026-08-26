@@ -102,7 +102,8 @@ Gate 2 firing repeatedly means a prompt or model change altered output shape.
       `$env.ANTHROPIC_API_KEY`)
 - [ ] `pip install anthropic jsonschema`
 - [ ] `python evals/run_eval.py` passes with 0 false blocks
-- [ ] `python orchestrator/run.py --dry-run` releases; `--scenario thin_evidence` halts
+- [ ] `python orchestrator/run.py --dry-run` releases; `--scenario thin_evidence` halts;
+      `--scenario escalation` exhausts the retry budget and escalates
 - [ ] Reviewer model confirmed different family from drafter
 - [ ] `runs.jsonl` writing to durable storage, not a container filesystem
 - [ ] Escalation queue has a human attached to it and that human knows it

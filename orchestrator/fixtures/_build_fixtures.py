@@ -238,6 +238,96 @@ LONG_DRAFT = json.loads(json.dumps(GOOD_DRAFT))
 LONG_DRAFT["email"]["body"] = LONG_BODY
 LONG_DRAFT["email"]["word_count"] = 121  # model under-reports; code catches both problems
 
+# --------------------------------------------------------------- escalation
+# Mirrors the real live run (785069cb, see STATE.md): every draft is
+# deterministically clean (schema, word count, phrases, claim refs all pass),
+# so QA is called every time — and every time, QA catches the same claim_drift
+# (c2's clearance quietly restated as broader than the source says). The
+# drafter never fixes the underlying drift across two revisions, the retry
+# budget (MAX_REVISIONS=2) runs out, and the pipeline escalates. This is the
+# only fixture that exercises draft_package_r2 / qa_verdict_r2 — every other
+# scenario resolves (or halts, or rejects) before the budget is exhausted, so
+# until this one, ESCALATED had zero test coverage.
+
+ESC_BODY_1 = GOOD_BODY.replace(
+    "pediatric sample volumes are a genuinely hard validation problem and most "
+    "benchtop platforms never bother.",
+    "that clearance makes them the only benchtop platform on the market cleared "
+    "for pediatric use — most competitors never attempt it.",
+)
+ESC_DRAFT_1 = json.loads(json.dumps(GOOD_DRAFT))
+ESC_DRAFT_1["email"]["body"] = ESC_BODY_1
+ESC_DRAFT_1["run_meta"] = meta("drafter", 1)
+
+ESC_VERDICT_1 = {
+    "score": 5,
+    "pass": False,
+    "flags": [
+        {
+            "type": "claim_drift", "severity": "blocking",
+            "location": "the only benchtop platform on the market cleared for pediatric use",
+            "remediation": "c2 says the HV-220 was cleared for pediatric sample volumes. It does not say Harborview is the only company with pediatric clearance — that's a stronger, unsourced claim. Restate to what the source actually says.",
+        }
+    ],
+    "swap_test": {"redacted_body": "", "still_coherent": False},
+    "notes": "Everything else traces cleanly. One claim was quietly upgraded from 'cleared for' to 'the only one cleared for,' which the source does not support.",
+    "run_meta": meta("qa-reviewer", 1),
+}
+
+# revision 1 — drafter softens the wording but the drift survives in a new form
+ESC_BODY_2 = GOOD_BODY.replace(
+    "pediatric sample volumes are a genuinely hard validation problem and most "
+    "benchtop platforms never bother.",
+    "that clearance makes them the first to market with pediatric clearance in "
+    "this category.",
+)
+ESC_DRAFT_2 = json.loads(json.dumps(GOOD_DRAFT))
+ESC_DRAFT_2["email"]["body"] = ESC_BODY_2
+ESC_DRAFT_2["run_meta"] = meta("drafter", 2)
+ESC_DRAFT_2["run_meta"]["revision_of"] = "attempt-1"
+
+ESC_VERDICT_2 = {
+    "score": 5,
+    "pass": False,
+    "flags": [
+        {
+            "type": "claim_drift", "severity": "blocking",
+            "location": "the first to market with pediatric clearance",
+            "remediation": "Same drift, reworded. c2 supports 'cleared for pediatric sample volumes,' not a first-to-market claim. Nothing in the brief establishes market ordering.",
+        }
+    ],
+    "swap_test": {"redacted_body": "", "still_coherent": False},
+    "notes": "Second consecutive attempt, second instance of the same drift under new phrasing. The revision changed the sentence, not the problem.",
+    "run_meta": meta("qa-reviewer", 2),
+}
+
+# revision 2 — budget's last attempt; drift persists a third time
+ESC_BODY_3 = GOOD_BODY.replace(
+    "pediatric sample volumes are a genuinely hard validation problem and most "
+    "benchtop platforms never bother.",
+    "that clearance makes them the clear pediatric-clearance leader in the "
+    "category.",
+)
+ESC_DRAFT_3 = json.loads(json.dumps(GOOD_DRAFT))
+ESC_DRAFT_3["email"]["body"] = ESC_BODY_3
+ESC_DRAFT_3["run_meta"] = meta("drafter", 3)
+ESC_DRAFT_3["run_meta"]["revision_of"] = "attempt-2"
+
+ESC_VERDICT_3 = {
+    "score": 4,
+    "pass": False,
+    "flags": [
+        {
+            "type": "claim_drift", "severity": "blocking",
+            "location": "the clear pediatric-clearance leader in the category",
+            "remediation": "Third instance of the same unsupported superlative. c2 is a single clearance announcement, not a category-leadership claim. Retry budget is spent; this should escalate rather than attempt a fourth rewrite.",
+        }
+    ],
+    "swap_test": {"redacted_body": "", "still_coherent": False},
+    "notes": "Retry budget exhausted with the same drift in a third form. Escalating to a human is correct here — a fourth revision would optimize the wording against this reviewer rather than fix the claim.",
+    "run_meta": meta("qa-reviewer", 3),
+}
+
 # ---------------------------------------------------------------- assemble
 FIXTURES = {
     "happy_path": {
@@ -262,6 +352,15 @@ FIXTURES = {
         "draft_package_r1": GOOD_DRAFT,
         "qa_verdict_r1": FIXED_VERDICT,
     },
+    "escalation": {
+        "research_brief": BASE_BRIEF,
+        "draft_package": ESC_DRAFT_1,
+        "qa_verdict": ESC_VERDICT_1,
+        "draft_package_r1": ESC_DRAFT_2,
+        "qa_verdict_r1": ESC_VERDICT_2,
+        "draft_package_r2": ESC_DRAFT_3,
+        "qa_verdict_r2": ESC_VERDICT_3,
+    },
 }
 
 if __name__ == "__main__":
@@ -272,6 +371,14 @@ if __name__ == "__main__":
     GOOD_DRAFT["email"]["word_count"] = wc(GOOD_BODY)
     GENERIC_DRAFT["email"]["word_count"] = wc(GENERIC_BODY)
     FIXED_DRAFT["email"]["word_count"] = wc(GOOD_BODY)
+
+    for name, body, draft in (
+        ("escalation attempt 1", ESC_BODY_1, ESC_DRAFT_1),
+        ("escalation attempt 2", ESC_BODY_2, ESC_DRAFT_2),
+        ("escalation attempt 3", ESC_BODY_3, ESC_DRAFT_3),
+    ):
+        assert 110 <= wc(body) <= 130, f"{name} body is {wc(body)} words"
+        draft["email"]["word_count"] = wc(body)
 
     out = Path(__file__).parent / "dry_run.json"
     out.write_text(json.dumps(FIXTURES, indent=2) + "\n", encoding="utf-8")

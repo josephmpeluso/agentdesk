@@ -246,3 +246,7 @@ Listing these because a system diagram without them is marketing.
   scenarios' live runs are unrun — not skipped by choice, but because the
   Anthropic account funding this project's live testing ran out of credit.
   See `README.md` → "What live testing found" and `STATE.md`.
+- **No live run has ever produced `RELEASED` or `HALTED`.** Of 13 real API
+  calls against Sonos, 12 were rejected at the researcher's schema gate and 1
+  escalated. `RELEASED` and `HALTED` are demonstrated only via dry-run
+  fixtures — real code paths, not live evidence.

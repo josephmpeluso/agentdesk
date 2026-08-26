@@ -46,13 +46,14 @@ if ($LASTEXITCODE -ne 0) { Say "  pip install failed. Check your internet connec
 Say "  Done." Green
 
 # --- 3. Run the pipeline scenarios ---------------------------------------
-Say "`n[3/4] Running all four pipeline scenarios..." Yellow
+Say "`n[3/4] Running all five pipeline scenarios..." Yellow
 
 $scenarios = @(
     @{ name = "happy_path";          expect = "RELEASED";  desc = "clean draft clears all five gates" },
     @{ name = "generic_email";       expect = "RELEASED";  desc = "template blocked, revised, then released" },
     @{ name = "thin_evidence";       expect = "HALTED";    desc = "stops before drafting on weak research" },
-    @{ name = "wordcount_violation"; expect = "RELEASED";  desc = "caught by code before spending a QA call" }
+    @{ name = "wordcount_violation"; expect = "RELEASED";  desc = "caught by code before spending a QA call" },
+    @{ name = "escalation";          expect = "ESCALATED"; desc = "retry budget exhausted, routed to a human" }
 )
 
 $failures = 0

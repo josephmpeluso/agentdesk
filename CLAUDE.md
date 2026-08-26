@@ -76,6 +76,7 @@ edges). Hand-editing the output skips those checks.
 python orchestrator/run.py --dry-run                          # releases
 python orchestrator/run.py --dry-run --scenario generic_email # blocks, revises, releases
 python orchestrator/run.py --dry-run --scenario thin_evidence # halts
+python orchestrator/run.py --dry-run --scenario escalation    # exhausts retry budget, escalates
 python evals/run_eval.py                                      # offline gate score
 python evals/run_eval.py --live                               # adds real QA calls (costs money)
 ```
@@ -84,7 +85,7 @@ Windows: `.\setup.ps1` runs all of the above as a verification pass.
 
 ## Definition of done for any change
 
-1. All four `--dry-run` scenarios still produce their expected outcome
+1. All five `--dry-run` scenarios still produce their expected outcome
 2. `python evals/run_eval.py` still shows **0 false blocks**
 3. Any new failure mode discovered gets added to `evals/build_golden_set.py`
    as its own mutation — the golden set grows and never shrinks
@@ -93,8 +94,10 @@ Windows: `.\setup.ps1` runs all of the above as a verification pass.
 
 ## Current state
 
-Working and verified: the CLI orchestrator, all four scenarios, the offline
-eval (71% recall, 0% false blocks), the n8n workflow graph.
+Working and verified: the CLI orchestrator, all five scenarios (including
+`escalation`, which exhausts the retry budget and reaches `ESCALATED` — the
+one terminal state the first four fixtures never touched), the offline eval
+(71% recall, 0% false blocks), the n8n workflow graph.
 
 Not built: the live eval has never been run; the device-fleet-triage vertical
 is specified in `verticals/` but not implemented; there is no suppression list,

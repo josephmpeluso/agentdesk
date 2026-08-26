@@ -1,6 +1,7 @@
 # Secrets — never commit an API key
 .env
 .env.*
+*.env
 *.key
 **/secrets/**
 
@@ -12,6 +13,13 @@ venv/
 
 # Netlify CLI local site-link state — machine-specific, not for version control
 .netlify/
+
+# Generated on every run — never commit
+runs.jsonl
+
+# OS cruft
+.DS_Store
+Thumbs.db
 
 # Local scratch — throwaway debug/test scripts, never meant to be committed
 _debug_*.py

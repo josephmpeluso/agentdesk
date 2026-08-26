@@ -40,9 +40,10 @@ claim below still matches what's actually committed, not what this file says.
   received and correctly blocked twice on `claim_drift`.
 - **The offline deterministic eval** (`python evals/run_eval.py`) — needs no
   API key, ran clean: **10/14 recall, 0/4 false blocks.**
-- **All four dry-run scenarios** (`--dry-run --scenario {happy_path,
-  generic_email, thin_evidence, wordcount_violation}`) still pass their
-  expected terminal state after every code change made this session and last.
+- **All five dry-run scenarios** (`--dry-run --scenario {happy_path,
+  generic_email, thin_evidence, wordcount_violation, escalation}`) still pass
+  their expected terminal state after every code change made this session and
+  last. `escalation` is new this session — see below.
 
 ## Fixed this session and last (real bugs, not the eight protected invariants)
 
@@ -63,6 +64,20 @@ claim below still matches what's actually committed, not what this file says.
    fully `RELEASED` run would have printed nothing but a bare outcome line.
    Replaced with `print_audit()`, which shows full content for **any**
    terminal state, not just `released`.
+
+## New this session: escalation fixture coverage
+
+The original four dry-run scenarios never reached `ESCALATED`: `happy_path`
+resolves in 1 attempt, `generic_email` and `wordcount_violation` resolve on
+revision (2 attempts), and `thin_evidence` halts before drafting (0 attempts).
+None exhausted the retry budget, so the terminal state this project's best
+real run (`785069cb`) actually reached had zero dry-run coverage. Added a
+fifth scenario, `escalation`, in `orchestrator/fixtures/_build_fixtures.py`:
+three deterministically-clean drafts, each carrying the same `claim_drift`
+QA flag reworded, mirroring `785069cb`'s real story. `MAX_REVISIONS=2` runs
+out after `draft_package_r2`/`qa_verdict_r2`, and the run correctly lands on
+`ESCALATED`. Verified: all five scenarios now produce their expected terminal
+state (`RELEASED` ×3, `HALTED` ×1, `ESCALATED` ×1).
 
 ## A real observability gap, stated plainly
 
@@ -96,9 +111,11 @@ went.
   debugging (not a full eval run) did get correctly blocked by Opus (score
   2, blocking `generic` flag) — suggestive, not a measurement, and not
   reported as one anywhere else in this repo.
-- **The four dry-run scenarios have never been run live** (only against
-  fixtures). This was planned, then explicitly **cancelled** this session —
-  see below.
+- **None of the dry-run scenarios have ever been run live** (only against
+  fixtures) — four at the time this was planned and cancelled, a fifth
+  (`escalation`) added later purely as a fixture, so the live-run count below
+  is unaffected. Running scenarios live was planned, then explicitly
+  **cancelled** this session — see below.
 - **Cost/ops figures in `ops/RUNBOOK.md`** are estimates, not validated
   against real spend beyond this project's own live testing (~$3–5 across 13
   runs, computed from `runs.jsonl` token counts at 2026-08 pricing).
