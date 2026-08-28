@@ -235,13 +235,25 @@ Listing these because a system diagram without them is marketing.
   reply rate, and nothing in this repo does.
 - **The researcher overruns its own declared field-length limits, live.**
   Across 13 live runs against Sonos, `marketing_task.description` (capped at
-  400 characters) ran over the limit on three separate runs, and the model
-  twice invented non-conforming `claim_id`s (`c1b`, `c2b`) rather than
-  assigning a plain next integer. Prompt clarifications reduced but did not
-  eliminate this — schema gate 2 catches every instance and rejects without
-  retry, which is the correct behavior, but the underlying unreliability is
-  the same "limits are suggestions" problem this project documents for the
-  drafter, just not yet fixed for the researcher.
+  400 characters) ran over the limit on at least 2 separate runs, and the
+  model invented non-conforming `claim_id`s (`c1b`, `c2b`) on at least 3
+  separate runs rather than assigning a plain next integer. Both counts are
+  floors: `validate_schema()` records only the *first* jsonschema error per
+  run, so a second violation of the same run's brief could be hiding behind
+  an earlier one and was never persisted anywhere — see the logging-gap bullet
+  below. Prompt clarifications reduced but did not eliminate the underlying
+  problem — schema gate 2 catches every instance and rejects without retry,
+  which is the correct behavior, but the underlying unreliability is the same
+  "limits are suggestions" problem this project documents for the drafter,
+  just not yet fixed for the researcher.
+- **The gate log records only the first schema-validation error per run, not
+  every error.** A deliberate, correct choice for the pipeline itself — one
+  loud, findable failure beats a wall of secondary errors nobody reads before
+  fixing the first one. The cost: the historical record in `runs.jsonl` can't
+  answer "how many times did failure mode X actually happen," only "how many
+  runs had X as their first-reported problem." The two floors above (2 and 3
+  runs) are a direct consequence — the true counts could be higher and there
+  is no way to recover them without re-running the pipeline.
 - **The live eval is unmeasured.** `run_eval.py --live` and all four
   scenarios' live runs are unrun — not skipped by choice, but because the
   Anthropic account funding this project's live testing ran out of credit.

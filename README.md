@@ -37,7 +37,7 @@ things break:
 
 **The limits are suggestions.** "120 words" yields 118, 131, 147. The model
 estimates, and it estimates optimistically. Eval case b08 in this repo has a
-model reporting 122 words while emitting 156.
+model reporting 122 words while emitting 155.
 
 **The reviewer is agreeable.** Ask a model to grade output from its own family,
 in the same context, against a threshold you named — and the score converges
@@ -125,8 +125,8 @@ blocked by model    0
 ```
 
 **Ten of fourteen bad drafts blocked before spending a single review call, at
-zero false positives.** Review is the most expensive stage; ~40% of review
-spend on failures disappears.
+zero false positives.** Review is the most expensive stage. On the 18-case
+golden set, 10 cases never reach the reviewer at all — caught by code first.
 
 The four escapes are the honest part:
 
@@ -147,6 +147,51 @@ model catches those four. **It has not been run** — the account that funded
 this project's live testing ran out of credit first (see below). The number
 stated above is the honest one: 10/14 by code, 0/4 false blocks, and four
 cases that need a model call this project hasn't paid for yet.
+
+---
+
+## Reproducing the results
+
+Everything below the first three lines needs no API key and no internet
+access — you can confirm the offline numbers above in under two minutes.
+
+```bash
+pip install anthropic jsonschema                               # once
+
+# --- zero cost, no API key ---
+python orchestrator/run.py --dry-run                            # RELEASED
+python orchestrator/run.py --dry-run --scenario generic_email   # RELEASED, after 1 revision
+python orchestrator/run.py --dry-run --scenario thin_evidence   # HALTED
+python orchestrator/run.py --dry-run --scenario wordcount_violation  # RELEASED, after 1 revision
+python orchestrator/run.py --dry-run --scenario escalation      # ESCALATED, retry budget exhausted
+python evals/run_eval.py                                        # 10/14 recall, 0/4 false blocks — reproduces "Measured results" above exactly
+python orchestrator/test_jsonio.py                               # 6/6 — the JSON-extraction parser tests
+```
+
+Open `web/index.html` directly in a browser (double-click it — no server, no
+build step) to see the audit trail behind the "13 real API runs" claims
+throughout this document. On Windows, `.\setup.ps1` runs everything above as
+one pass and tells you if anything's broken.
+
+```bash
+# --- needs ANTHROPIC_API_KEY, costs real money ---
+python evals/run_eval.py --live                    # ~8 real QA-reviewer calls (Opus): the 4 good cases plus b11-b14, the ones code can't catch
+python orchestrator/run.py --company "Some Company" --domain example.com   # one full live pipeline run
+```
+
+A self-audit against these files caught four numbers elsewhere in this
+document and `ARCHITECTURE.md` that didn't hold up — one off-by-one word
+count, two live-run counts overstated as exact when the gate log only ever
+kept a floor, and one "~40% of review spend" figure with no computation
+behind it anywhere in this repo. All four are corrected in place; the review
+spend figure is replaced with the actual measured count it was standing in
+for. A repo whose thesis is "unsupported claims get blocked" should show
+that check on itself too.
+
+`run_eval.py --live` is the only thing standing between "10/14, 0/4 false
+blocks" and a real measurement of whether the QA reviewer catches the four
+escapes. See "Measured results" above for why that number isn't in this
+document yet.
 
 ---
 
@@ -183,10 +228,14 @@ same class of bug the researcher's own `SKILL.md` names.
 project's own thesis about the drafter — but for the researcher too.** Across
 13 live runs, the researcher repeatedly overran its own declared field-length
 limits (`marketing_task.description`, capped at 400 characters, ran over by
-several dozen on three separate live runs) and occasionally invented
-non-conforming claim IDs. Every one of these was rejected without retry, per
-this system's core invariant: malformed output is a prompt bug, not a flake,
-and silently retrying it hides the bug.
+several dozen on at least 2 separate live runs) and invented non-conforming
+claim IDs on at least 3 separate live runs. Both counts are floors, not exact
+totals: the schema gate records only the *first* validation error per run
+(see "Known limitations" in `ARCHITECTURE.md`), so a second violation hiding
+behind an earlier one in the same run was never persisted anywhere and can't
+be recovered now. Every instance actually caught was rejected without retry,
+per this system's core invariant: malformed output is a prompt bug, not a
+flake, and silently retrying it hides the bug.
 
 **One run is worth reading in full.** A live run against Sonos went researcher
 → drafter → QA cleanly, and the QA reviewer (Opus) caught a real `claim_drift`

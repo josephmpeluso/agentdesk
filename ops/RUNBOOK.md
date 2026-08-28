@@ -44,9 +44,8 @@ that number; token counts move with company complexity.
 Two things that move it most:
 
 1. **Deterministic gate hit rate.** Every draft caught by Gate 3 skips a
-   reviewer call — the most expensive stage. Ten of fourteen bad drafts in the
-   eval set never reach QA. That is roughly 40% of review spend on failures,
-   removed.
+   reviewer call — the most expensive stage. On the 18-case golden set, 10
+   cases never reach QA at all — caught by code first.
 2. **Reviewer model choice.** Opus is 3–5× Sonnet here. Whether it earns that
    is an empirical question with an answer: run `evals/run_eval.py --live` on
    both and compare recall on cases b11–b14. Don't argue about it.
