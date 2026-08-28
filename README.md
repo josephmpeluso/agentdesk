@@ -25,6 +25,35 @@ runs against Sonos, including the run this project is proudest of.
 
 ---
 
+## Sibling project: Crux
+
+AgentDesk is one half of a pair. Its sibling is
+**[Crux](https://github.com/josephmpeluso/crux)** — a parallel debate that
+ends by naming the one fact that would settle a disagreement, instead of
+averaging two arguments into "it depends."
+
+They solve opposite problems and share one spine:
+
+- **Reach for AgentDesk when the task has a ground truth.** Every claim in
+  the output traces to a source URL, so the job is to *gate* — check the
+  trace mechanically, block whatever fails, retry twice, escalate to a human
+  when the budget runs out.
+- **Reach for Crux when the task is a judgment call with no ground truth.**
+  Build vs. buy, take the offer vs. walk. There's nothing to verify — two
+  honest arguments and, usually, one fact underneath both of them nobody has
+  looked up yet. Crux's job is to *find that fact*, not to gate anything —
+  its mediator names the crux and often withholds a verdict entirely, rather
+  than average two positions into something true and useless.
+
+Same spine either way: typed JSON contracts, schema validation, deterministic
+checks that run before any model call, and a known-limitations section that
+says plainly what each system can't catch. The contrast is the point — the
+same engineering discipline produces a linear gated pipeline when there's a
+right answer to check against, and a parallel decision aid that admits when
+there isn't.
+
+---
+
 ## The starting point
 
 This began as a prompt worth taking seriously:

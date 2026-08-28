@@ -216,7 +216,13 @@ Listing these because a system diagram without them is marketing.
   proves it: "I hope you are having a great week" is not on the list and
   sails through the deterministic gate. Every new bad opener is a patch after
   the fact. A learned classifier would generalize; it would also need training
-  data this system doesn't have yet.
+  data this system doesn't have yet. This isn't unique to this repo:
+  [Crux](https://github.com/josephmpeluso/crux)'s phantom-opponent check is
+  the same mechanism — a phrase denylist over a different failure shape — and
+  it was independently measured leaking the same way, on a paraphrase the
+  list didn't anticipate (`m01` in Crux's own eval set). Two independent
+  systems, same failure mode. Worth reading as a property of denylists in
+  general, not a bug in either one.
 - **The swap test is the only defense against a well-written template**, and
   it runs on a model. Eval case b12 is correctly worded, correctly sourced,
   correctly counted, and completely generic. Code cannot touch it. If the
