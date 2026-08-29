@@ -14,6 +14,9 @@ venv/
 # Netlify CLI local site-link state — machine-specific, not for version control
 .netlify/
 
+# Wrangler (Cloudflare Pages) local cache — machine-specific, not for version control
+.wrangler/
+
 # Generated on every run — never commit
 runs.jsonl
 

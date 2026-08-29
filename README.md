@@ -20,8 +20,10 @@ No API key needed for any of the above. Add one and `--company "Acme Corp"`
 runs it live.
 
 **To see real evidence instead of reading claims about it:** open
-[`web/index.html`](web/index.html) — a static audit viewer over 13 real API
-runs against Sonos, including the run this project is proudest of.
+[`web/index.html`](web/index.html) locally, or visit
+[agentdesk-4f6.pages.dev](https://agentdesk-4f6.pages.dev) — a static audit
+viewer over 13 real API runs against Sonos, including the run this project
+is proudest of. (Moving to `agentdesk.joeypeluso.com`; see `DEPLOY.md`.)
 
 ---
 
@@ -304,6 +306,7 @@ ops/               runbook: metrics, cost model, failure playbooks
 ARCHITECTURE.md    why each gate exists, and what this system can't do
 STATE.md           what's built, what's verified live, what's unproven — as of today
 DEMO.md            a plain-language script for walking someone through this
+DEPLOY.md          how web/ actually gets deployed (Cloudflare Pages), and the redeploy command
 ```
 
 Both runtimes read the same `contracts/`. Change a schema and the CLI and the

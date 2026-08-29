@@ -1,16 +1,17 @@
 name: Deploy dashboard to GitHub Pages
 
-# Not live yet. This workflow does nothing until Pages is turned on in repo
-# Settings → Pages → Build and deployment → Source: "GitHub Actions" — that
-# step also requires the repo to be public on GitHub Free. Creating this file
-# does not flip either of those switches.
+# NOT the live deploy path. The dashboard deploys via Cloudflare Pages
+# instead (wrangler, not this workflow) — see DEPLOY.md for why and for the
+# actual redeploy command. This file is kept, inert, in case that decision
+# ever reverses; it does nothing on its own (workflow_dispatch-only, and
+# Pages was never enabled in this repo's GitHub settings).
 #
 # Trigger is manual-only (workflow_dispatch) on purpose: a judgment call, not
-# a fact. A push-triggered version is the more common pattern once Pages is
-# actually enabled, but until then a push to master would just produce a red
-# X in the Actions tab (no Pages environment exists to deploy into yet).
-# Add `push: { branches: [master], paths: ['web/**'] }` under `on:` once
-# Pages is live, if auto-deploy-on-push is wanted.
+# a fact. A push-triggered version is the more common pattern if this ever
+# becomes the live path, but until then a push to master would just produce
+# a red X in the Actions tab (no Pages environment exists to deploy into).
+# Add `push: { branches: [master], paths: ['web/**'] }` under `on:` if this
+# is ever turned on.
 
 on:
   workflow_dispatch:
