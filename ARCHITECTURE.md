@@ -239,19 +239,35 @@ Listing these because a system diagram without them is marketing.
 - **The eval set is synthetic.** Fourteen mutations of one baseline. It
   measures whether gates fire on known failure shapes. It does not measure
   reply rate, and nothing in this repo does.
-- **The researcher overruns its own declared field-length limits, live.**
-  Across 13 live runs against Sonos, `marketing_task.description` (capped at
-  400 characters) ran over the limit on at least 2 separate runs, and the
-  model invented non-conforming `claim_id`s (`c1b`, `c2b`) on at least 3
-  separate runs rather than assigning a plain next integer. Both counts are
-  floors: `validate_schema()` records only the *first* jsonschema error per
-  run, so a second violation of the same run's brief could be hiding behind
-  an earlier one and was never persisted anywhere — see the logging-gap bullet
-  below. Prompt clarifications reduced but did not eliminate the underlying
-  problem — schema gate 2 catches every instance and rejects without retry,
-  which is the correct behavior, but the underlying unreliability is the same
-  "limits are suggestions" problem this project documents for the drafter,
-  just not yet fixed for the researcher.
+- **The researcher overran its own declared field-length limits, live — fixed
+  in the source, not yet proven live.** Across the 13 live runs against
+  Sonos, 12 were `REJECTED` at the researcher's schema gate; a full audit of
+  every gate detail (not just the two most visible shapes) found 7 of those
+  12 were exactly two defects: a field over its character cap (4 runs, across
+  `marketing_task.description`, `marketing_task.why_ai_helps`, and
+  `what_they_sell.summary` — not only `description`, as earlier text here
+  claimed) and a non-conforming `claim_id` like `c1b` (3 runs). Root cause:
+  `skills/researcher/SKILL.md` told the model to count *characters* before
+  emitting a field — something a model does unreliably, since it doesn't see
+  individual characters the way it sees words — instead of giving it a word
+  budget with real margin under the character cap, and never stated the
+  `claim_id` pattern with valid/invalid examples at all. Fixed: the skill now
+  gives explicit word ceilings (with margin) instead of a character-counting
+  instruction, explicit `claim_id` examples, and closes two more gaps the
+  same audit found — `evidence_type`'s enum was never named in the prompt,
+  and neither was the required date format — both of which the schema
+  requires but nothing told the model. `research_brief_precheck()` in
+  `orchestrator/run.py` also now catches all of these before schema
+  validation runs, with a message that names the field and the actual number
+  instead of a jsonschema dump truncated mid-string. Golden-set cases
+  `rb01`–`rb04` guard against a regression. **What this doesn't claim:** the
+  fix is unverified against a real model — no live run has happened since it
+  shipped. The remaining 5 of 12 historical rejections were three separate
+  things this fix doesn't touch: 3 were output-budget truncations at the
+  drafter/QA stage (already fixed in an earlier pass, before this run set),
+  1 was a citation-markup leak (reinforced guidance, not a new fix), and 1
+  was a single run missing a required field entirely (a one-off, not a
+  pattern).
 - **The gate log records only the first schema-validation error per run, not
   every error.** A deliberate, correct choice for the pipeline itself — one
   loud, findable failure beats a wall of secondary errors nobody reads before

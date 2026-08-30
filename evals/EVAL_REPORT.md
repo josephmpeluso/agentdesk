@@ -12,16 +12,21 @@ keeps that gate switched on for a week, and then the system has no gate at all.
 
 ## The golden set
 
-18 cases: 4 clean, 14 bad. Every case is one named mutation applied to a single
-known-good baseline, so each isolates exactly one failure mode. Hand-writing
-14 bad emails produces 14 subtly different emails and no clean attribution
-when one gets through.
+23 cases: 5 clean, 18 bad. Every case is one named mutation applied to a
+single known-good baseline, so each isolates exactly one failure mode.
+Hand-writing 18 bad emails produces 18 subtly different emails and no clean
+attribution when one gets through.
 
 Each case declares who *should* catch it:
 
 - `code` — a deterministic check, no model call needed
 - `model` — only the QA reviewer can catch it
 - `none` — intentionally clean; blocking it is a false positive
+
+Five cases (`rb01`–`rb04`, `rg01`) carry `"stage": "researcher"` and test
+`research_brief_precheck()` against a mutated *brief*, not a mutated draft —
+see "Researcher-stage cases" below. Everything else tests the drafter/QA
+path via `deterministic_checks()`, unchanged.
 
 Regenerate with `python build_golden_set.py`.
 
@@ -30,9 +35,9 @@ Regenerate with `python build_golden_set.py`.
 `python run_eval.py` · runs in under a second · no API key
 
 ```
-recall             10/14   71%   (known-bad drafts blocked)
-false block rate    0/4     0%   (known-good drafts blocked)
-blocked by code    10
+recall             14/18   78%   (known-bad drafts blocked)
+false block rate    0/5     0%   (known-good drafts blocked)
+blocked by code    14
 blocked by model    0
 ```
 
@@ -56,10 +61,32 @@ blocked by model    0
 | b12 | generic, no tells | model | escaped |
 | b13 | claim drift | model | escaped |
 | b14 | invented metric on a real claim id | model | escaped |
+| rb01 | marketing_task.description over 400 chars | code | **caught** |
+| rb02 | malformed claim_id (`c1b`) | code | **caught** |
+| rb03 | evidence_type not in the enum | code | **caught** |
+| rb04 | published_date not YYYY-MM-DD | code | **caught** |
+| rg01 | unmutated brief (guards the precheck against false positives) | — | passed |
 
-Ten of fourteen bad drafts blocked before spending a single review call, at
-zero false positives. That is the case for the deterministic layer: the
-cheapest gate catches most of the volume.
+Fourteen of eighteen bad drafts and briefs blocked before spending a single
+model call, at zero false positives. That is the case for the deterministic
+layer: the cheapest gate catches most of the volume.
+
+## Researcher-stage cases
+
+`rb01`–`rb04` exist because the offline number above used to hide a real
+production defect: 12 of 13 live runs against Sonos were `REJECTED` at the
+researcher's own schema gate, and 7 of those 12 were exactly the two shapes
+`rb01` and `rb02` test — a field over its length cap, and a claim id like
+`c1b` instead of a plain integer. The gate was working. The researcher's
+`SKILL.md` was under-specified relative to the schema it was supposed to
+produce: it told the model to count *characters*, which a model can't do
+reliably, instead of giving it a word budget with real margin, and it never
+stated the `claim_id` pattern with valid/invalid examples at all. Both are
+fixed in `skills/researcher/SKILL.md` and reinforced in `run.py`'s injected
+prompt; `rb01`/`rb02` are the regression guard so it can't quietly come back.
+`rb03` and `rb04` close two more gaps the same audit found: `evidence_type`'s
+six-value enum and the `YYYY-MM-DD` date format were never stated in the
+prompt at all, even though the schema requires both.
 
 ## What escaped, and why it matters
 
@@ -95,13 +122,16 @@ evidence.
 
 ## Live mode
 
-`python run_eval.py --live` adds real QA reviewer calls for every case that
-clears the deterministic gate. Costs roughly 4 calls (only the escapees reach
-the reviewer) at approximately $0.02–0.04 each.
+`python run_eval.py --live` adds real QA reviewer calls for every *drafter*-stage
+case that clears the deterministic gate — that's 8 calls, not 4: the 4 clean
+baselines (`g01`–`g04`) plus the 4 escapes (`b11`–`b14`), all of which pass
+`deterministic_checks()` and so all reach the reviewer. The 5 researcher-stage
+cases never call the model at all — `research_brief_precheck()` is pure code,
+by design, since these are schema/format defects, not judgment calls.
 
 The number to watch is recall on b11–b14. If the reviewer catches all four,
 combined recall is 100% at 0% false blocks. If it catches two, the honest
-report is 86%, and the gap is where the next iteration goes.
+report is 16/18 — 89% — and the gap is where the next iteration goes.
 
 Run it before quoting a combined number. An unrun eval is a hypothesis.
 

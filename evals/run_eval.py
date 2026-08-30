@@ -27,7 +27,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "orchestrator"))
 
-from run import deterministic_checks, release_decision, MODELS, load_skill, MAX_TOKENS  # noqa: E402
+from run import (  # noqa: E402
+    deterministic_checks, release_decision, research_brief_precheck,
+    MODELS, load_skill, MAX_TOKENS,
+)
 from jsonio import extract_json  # noqa: E402
 
 
@@ -53,12 +56,21 @@ def evaluate(cases: list[dict], live: bool) -> dict:
     rows = []
     failures: list[tuple[str, str]] = []
     for c in cases:
-        code_ok, problems = deterministic_checks(c["brief"], c["draft"])
+        stage = c.get("stage", "drafter")
+        if stage == "researcher":
+            # A researcher-stage case tests research_brief_precheck (Gate 2's
+            # field-level precheck) directly, not the drafter's deterministic
+            # checks — there's no draft to speak of at this stage, and no
+            # QA-reviewer path either: these are pure schema/format defects,
+            # not judgment calls.
+            code_ok, problems = research_brief_precheck(c["brief"])
+        else:
+            code_ok, problems = deterministic_checks(c["brief"], c["draft"])
         blocked_by = None
         if not code_ok:
             blocked_by = "code"
 
-        if live and code_ok:
+        if live and code_ok and stage == "drafter":
             try:
                 verdict = qa_live(c["brief"], c["draft"])
                 released, reason = release_decision(verdict)

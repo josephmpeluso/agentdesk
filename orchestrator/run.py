@@ -189,25 +189,34 @@ def call_agent(agent: str, user_content: str, record: RunRecord, attempt: int = 
     )
     if agent == "researcher":
         system_prompt += (
-            "\n\n## Search tool note\n\nCite sources only via `source_url`. Never copy "
-            "citation markup (e.g. `<cite index=...>...</cite>`) from search results into "
-            "any JSON string value — write plain prose there.\n\n"
-            "Every string field above has a maxLength. Count characters, not words, before "
-            "you emit — an oversized field is rejected outright, not truncated. When in "
-            "doubt, cut a clause rather than risk the limit.\n\n"
+            "\n\n## Search tool note\n\nCite sources only via `source_url`, a plain string "
+            "starting with `http://` or `https://`. Never copy citation markup (e.g. "
+            "`<cite index=...>...</cite>`), footnote brackets, or markdown link syntax from "
+            "search results into `source_url` or any other JSON string value — write plain "
+            "prose there.\n\n"
+            "Every string field with a maxLength has a *word* ceiling stated in the skill "
+            "above that leaves real margin under the character cap — use that word count, "
+            "not the character count. Counting words is something you do reliably; counting "
+            "characters in your own output is not, and a field that looks fine by eye can "
+            "still be over the character cap. Stay under the word ceiling and the character "
+            "cap takes care of itself. `marketing_task.description` (35 words, 400-char cap) "
+            "is where this has actually gone wrong before — it's the field you're told to "
+            "spend the most effort on, so it's the one that grows. One tight sentence naming "
+            "the task and its evidence is enough; put elaboration in `why_ai_helps` (also "
+            "35 words) instead of stuffing it all into `description`.\n\n"
             "`claim_id` must match `^c[0-9]+$` exactly: the letter c followed only by "
-            "digits — c1, c2, c3, ... Never c2b, c2-2, c2.1, or any other suffix.\n\n"
-            "`marketing_task.description` (max 400 chars) is where you tend to run over — "
-            "it's the field you're told to spend the most effort on, so it's the one that "
-            "grows past the limit. Write it, then count it, then cut it to fit. One tight "
-            "paragraph naming the task and its evidence is enough; save elaboration for "
-            "`why_ai_helps` instead of stuffing it all into `description`.\n\n"
+            "digits — c1, c2, c3, c11. Never c1b, c2a, c2-2, c2.1, or any other suffix.\n\n"
             "You will often have two or three claims that all support the same top-level "
             "finding (what_they_sell, recent_news, or marketing_task) — that's expected, "
             "since a finding is a synthesis and claims[] is the evidence under it. Do not "
             "invent a lettered variant to relate them. Just give each its own next plain "
             "integer id (c1, c2, c3, c4, c5...) in claims[], and set the finding's single "
-            "`claim_id` field to whichever one claim best anchors that finding."
+            "`claim_id` field to whichever one claim best anchors that finding.\n\n"
+            "`marketing_task.evidence_type` must be exactly one of: job_posting, "
+            "content_cadence, product_surface, support_channel, public_statement, "
+            "site_structure — no other string.\n\n"
+            "`recent_news.published_date` and every `claims[].retrieved_at` must be "
+            "YYYY-MM-DD, e.g. 2026-08-14."
         )
 
     kwargs: dict[str, Any] = dict(
@@ -244,6 +253,76 @@ def call_agent(agent: str, user_content: str, record: RunRecord, attempt: int = 
 
 class ContractError(Exception):
     """Raised when an agent's output violates its contract."""
+
+
+CLAIM_ID_RE = re.compile(r"^c[0-9]+$")
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+EVIDENCE_TYPES = {
+    "job_posting", "content_cadence", "product_surface",
+    "support_channel", "public_statement", "site_structure",
+}
+
+
+def research_brief_precheck(brief: dict) -> tuple[bool, list[str]]:
+    """Field-specific checks for research_brief, run before raw schema validation.
+
+    Every constraint here must match contracts/research_brief.schema.json
+    exactly (see CLAUDE.md -> "Keep in sync"). This exists because a raw
+    jsonschema error names a field path but the message is often eaten by the
+    (long) offending string itself — "first at marketing_task/description:
+    'Sonos publishes extensive educational content...' is too long" doesn't
+    tell you it's 437 characters against a 400 cap. This says that: which
+    field, what the actual number was, and what the limit is. On a pass, raw
+    schema validation still runs afterward as the comprehensive backstop for
+    anything not covered here (missing required fields, wrong types,
+    additionalProperties leaks).
+    """
+    problems: list[str] = []
+
+    def check_len(label: str, value: Any, cap: int) -> None:
+        if isinstance(value, str) and len(value) > cap:
+            problems.append(f"{label}: {len(value)} characters, exceeds {cap}-char cap by {len(value) - cap}")
+
+    def check_claim_id(label: str, value: Any) -> None:
+        if isinstance(value, str) and not CLAIM_ID_RE.match(value):
+            problems.append(
+                f"{label}: '{value}' does not match ^c[0-9]+$ "
+                "(letter c then digits only — no suffixes like c1b, c2a)"
+            )
+
+    def check_date(label: str, value: Any) -> None:
+        if isinstance(value, str) and not DATE_RE.match(value):
+            problems.append(f"{label}: '{value}' is not YYYY-MM-DD format")
+
+    wts = brief.get("what_they_sell") or {}
+    check_len("what_they_sell.summary", wts.get("summary"), 300)
+    check_claim_id("what_they_sell.claim_id", wts.get("claim_id"))
+
+    rn = brief.get("recent_news") or {}
+    check_len("recent_news.summary", rn.get("summary"), 300)
+    check_claim_id("recent_news.claim_id", rn.get("claim_id"))
+    check_date("recent_news.published_date", rn.get("published_date"))
+
+    mt = brief.get("marketing_task") or {}
+    check_len("marketing_task.description", mt.get("description"), 400)
+    check_len("marketing_task.why_ai_helps", mt.get("why_ai_helps"), 400)
+    check_claim_id("marketing_task.claim_id", mt.get("claim_id"))
+    evidence_type = mt.get("evidence_type")
+    if evidence_type is not None and evidence_type not in EVIDENCE_TYPES:
+        problems.append(
+            f"marketing_task.evidence_type: '{evidence_type}' is not one of {sorted(EVIDENCE_TYPES)}"
+        )
+
+    for i, c in enumerate(brief.get("claims", []) or []):
+        if not isinstance(c, dict):
+            continue
+        check_claim_id(f"claims[{i}].claim_id", c.get("claim_id"))
+        check_date(f"claims[{i}].retrieved_at", c.get("retrieved_at"))
+        url = c.get("source_url")
+        if isinstance(url, str) and not url.startswith(("http://", "https://")):
+            problems.append(f"claims[{i}].source_url: '{url[:60]}' does not start with http:// or https://")
+
+    return len(problems) == 0, problems
 
 
 # --------------------------------------------------------------------------
@@ -420,6 +499,16 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
         "research_brief",
     )
     record.brief = brief
+
+    # Precheck first: same gate ("schema:research_brief"), a clearer message
+    # when it fires. Only fall through to raw jsonschema validation if the
+    # precheck passes — it's the comprehensive backstop for anything the
+    # precheck doesn't cover (missing fields, wrong types, stray properties).
+    ok, problems = research_brief_precheck(brief)
+    if not ok:
+        record.gate("schema:research_brief", False, "; ".join(problems))
+        record.outcome = "rejected"
+        return record
 
     ok, detail = validate_schema(brief, "research_brief.schema.json")
     if not record.gate("schema:research_brief", ok, detail):

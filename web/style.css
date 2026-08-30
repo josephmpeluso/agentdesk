@@ -239,6 +239,18 @@ code, .mono { font-family: var(--font-mono); }
    intro panel
    ============================================================ */
 
+.viewer-note {
+  max-width: 1400px;
+  margin: 14px auto 0;
+  padding: 10px 24px;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--accent-tint);
+  border-top: 1px solid var(--accent-tint-border);
+  border-bottom: 1px solid var(--accent-tint-border);
+}
+.viewer-note strong { color: var(--ink); }
+
 .intro {
   max-width: 1400px;
   margin: 16px auto 0;
@@ -353,6 +365,11 @@ code, .mono { font-family: var(--font-mono); }
   color: var(--ink-2);
 }
 .intro-callout b { font-weight: 700; }
+
+.intro-callout-warn {
+  border-color: var(--rejected-border);
+  background: var(--rejected-tint);
+}
 
 .intro-eval {
   font-size: 12.5px;

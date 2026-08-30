@@ -24,11 +24,16 @@ claim below still matches what's actually committed, not what this file says.
   ran out and the pipeline escalated to a human queue instead of lowering the
   threshold. This is the best evidence this project has, and it happened
   without anyone scripting the outcome.
-- **Gate 2 (schema validation, no retry) held under real pressure.** 10 of 13
-  live runs were rejected at this gate, for genuinely different reasons each
-  time (wrong field names, a citation-markup leak from the search tool, a
-  `maxLength` overrun, a malformed `claim_id`). Every rejection was correct
-  and none were retried, per the system's own invariant.
+- **Gate 2 (schema validation, no retry) held under real pressure.** Of the
+  13 live runs, 12 were `REJECTED` overall; 9 of those were specifically
+  `schema:research_brief` gate failures (the other 3 were `contract`-gate
+  truncations at the drafter/QA stage — see below). A full per-run audit this
+  session (not just the two most-visible shapes) found the 9 broke down as:
+  4 field-length overruns (across `marketing_task.description`,
+  `marketing_task.why_ai_helps`, and `what_they_sell.summary` — not only
+  `description`), 3 malformed `claim_id`s, 1 citation-markup leak, and 1 run
+  missing a required field outright. Every rejection was correct and none
+  were retried, per the system's own invariant.
 - **Gate 3 (deterministic checks) caught a real self-report mismatch twice**
   live — the drafter claimed a word count that didn't match the actual count
   (113 vs. 117 in one run, 124 vs. 129 in another) — and correctly skipped
@@ -39,7 +44,7 @@ claim below still matches what's actually committed, not what this file says.
   this session's runs, but `release_decision()` ran on every real QA verdict
   received and correctly blocked twice on `claim_drift`.
 - **The offline deterministic eval** (`python evals/run_eval.py`) — needs no
-  API key, ran clean: **10/14 recall, 0/4 false blocks.**
+  API key, ran clean: **14/18 recall, 0/5 false blocks.**
 - **All five dry-run scenarios** (`--dry-run --scenario {happy_path,
   generic_email, thin_evidence, wordcount_violation, escalation}`) still pass
   their expected terminal state after every code change made this session and
@@ -79,6 +84,31 @@ out after `draft_package_r2`/`qa_verdict_r2`, and the run correctly lands on
 `ESCALATED`. Verified: all five scenarios now produce their expected terminal
 state (`RELEASED` ×3, `HALTED` ×1, `ESCALATED` ×1).
 
+## New this session: fixed the researcher's schema under-specification
+
+Root-caused the 12/13 live rejection rate instead of treating it as noise.
+Read `skills/researcher/SKILL.md` against `contracts/research_brief.schema.json`
+field by field. Found: the prompt told the model to count *characters*
+before emitting a length-capped field — unreliable, since a model doesn't
+see individual characters the way it sees words — instead of a word budget
+with real margin under the cap; `claim_id`'s `^c[0-9]+$` pattern was never
+stated with valid/invalid examples; `evidence_type`'s six-value enum was
+never named in the prompt at all; neither was the required `YYYY-MM-DD` date
+format. Fixed all four in `SKILL.md` and in `call_agent()`'s injected
+researcher-specific reinforcement. Added `research_brief_precheck()` in
+`orchestrator/run.py` — runs before raw `validate_schema()`, same gate name
+(`schema:research_brief`), checks the same constraints the schema does, but
+names the field and the actual number instead of a jsonschema message
+truncated mid-string by the offending value itself. Golden-set cases
+`rb01`–`rb04` (plus `rg01`, a clean-brief guard against the precheck itself
+being too strict) cover the fix; `evals/run_eval.py` now branches on a
+`"stage"` field per case so researcher-stage cases test
+`research_brief_precheck()` directly instead of the drafter's
+`deterministic_checks()`. All five dry-run scenarios and the offline eval
+still pass (now 14/18 recall, 0/5 false blocks — was 10/14, 0/4). **Not done:
+no live run has happened against the fix.** The next live batch is what
+actually tests it against a real model, not the fixtures.
+
 ## A real observability gap, stated plainly
 
 The best run this project produced — `785069cb`, the escalation — happened
@@ -106,7 +136,7 @@ went.
   `thin_evidence` fixture demonstrates it. No live research call ever
   produced `insufficient_evidence: true` for Sonos.
 - **The live QA-judgment eval (`run_eval.py --live`, cases b11–b14) has never
-  been run.** The offline number (10/14, 0/4 false blocks) is the only
+  been run.** The offline number (14/18, 0/5 false blocks) is the only
   honest figure available. A single ad-hoc test call against case b12 during
   debugging (not a full eval run) did get correctly blocked by Opus (score
   2, blocking `generic` flag) — suggestive, not a measurement, and not
@@ -131,7 +161,7 @@ Per this session's brief: running all four scenarios live, and running the
 four live QA-judgment eval cases, are **cancelled** — not "next up," not
 "blocked pending credit." The account that would fund them ran empty. The
 honest, final number for this project's quality gate is the offline one:
-**10/14 recall, 0/4 false blocks, by deterministic code alone.** If someone
+**14/18 recall, 0/5 false blocks, by deterministic code alone.** If someone
 picks this project back up with API credit, those two things are exactly
 where to resume.
 
@@ -142,10 +172,11 @@ where to resume.
   it with credit.
 - `785069cb`'s underlying content (claims, draft text, flag detail) is gone —
   not hidden, gone. It cannot be recovered without re-running the pipeline.
-- The researcher still intermittently overruns its own field-length limits
-  live, even after prompt hardening (see `ARCHITECTURE.md` → Known
-  limitations). This is caught correctly by Gate 2 every time, but it is not
-  *fixed* — it's a live, recorded, real unreliability, same category as the
-  drafter's word-count problem this whole project exists to catch.
+- The researcher's field-length and `claim_id`-format under-specification is
+  fixed in `SKILL.md` and `research_brief_precheck()` this session (see
+  above), but **unverified live** — no run has happened against the fix yet.
+  Caught correctly by Gate 2 every time it occurred, which is the right
+  behavior regardless, but "caught correctly" and "fixed" are different
+  claims and only the first one has live evidence behind it so far.
 - This repo was not a git repository until this session. `git init` and the
   first commit both happen today.

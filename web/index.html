@@ -25,6 +25,12 @@
   </div>
 </header>
 
+<p class="viewer-note">
+  AgentDesk itself is a command-line tool with no UI of its own. This page is a
+  <strong>static replay</strong> of 13 completed runs, not a live or interactive demo
+  — nothing here calls an API. Pick a run on the left to see its actual gate log.
+</p>
+
 <details class="intro" id="intro" open>
   <summary>
     <span class="intro-summary-text">What am I looking at?</span>
@@ -75,6 +81,21 @@
       the reviewer keeps blocking a draft after the retry budget runs out, the system
       routes it to a human instead of quietly lowering the bar — that's an escalation.
       Both mean a gate did its job.
+    </div>
+
+    <div class="intro-callout intro-callout-warn">
+      <b>REJECTED is different — it's a defect, not the gate doing its job.</b> It means
+      an agent's own output broke its contract: a field over its length limit, a
+      malformed id, an unparseable reply. The gate correctly refused to pass it on, but
+      the correct next step isn't "nothing to see here" — it's fixing the agent that
+      produced it. Of the 12 REJECTED runs below: 7 were the researcher's own schema
+      violations (field-length overruns, malformed claim ids) — the researcher's prompt
+      under-specified those constraints relative to its own schema, and that's since
+      been fixed in the source. 3 were an output-budget truncation at the drafter or QA
+      stage, already fixed in an earlier pass (before this run set). The remaining 2
+      were a citation-markup leak and one structurally malformed reply — the first has
+      reinforced guidance now, the second was a one-off. These runs predate all of that
+      and are left as-is, not backfilled or hidden.
     </div>
 
     <p class="intro-eval">

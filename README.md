@@ -145,21 +145,30 @@ restraint. Deletion works every time; restraint works most of the time, and
 
 ## Measured results
 
-`python evals/run_eval.py` — 18 cases, each one named mutation of a single
+`python evals/run_eval.py` — 23 cases, each one named mutation of a single
 known-good baseline, so every case isolates one failure mode.
 
 ```
-recall             10/14   71%   (known-bad drafts blocked)
-false block rate    0/4     0%   (known-good drafts blocked)
-blocked by code    10
+recall             14/18   78%   (known-bad drafts blocked)
+false block rate    0/5     0%   (known-good drafts blocked)
+blocked by code    14
 blocked by model    0
 ```
 
-**Ten of fourteen bad drafts blocked before spending a single review call, at
-zero false positives.** Review is the most expensive stage. On the 18-case
-golden set, 10 cases never reach the reviewer at all — caught by code first.
+**Fourteen of eighteen bad drafts and briefs blocked before spending a single
+model call, at zero false positives.** Review is the most expensive stage. On
+the 23-case golden set, 14 cases never reach a model at all — caught by code
+first.
 
-The four escapes are the honest part:
+Five of those 23 cases (`rb01`–`rb04`, `rg01`) are new: they test the
+*researcher's* own output against `research_brief_precheck()`, not the
+drafter. They exist because 12 of the 13 live runs against Sonos were
+rejected at the researcher's schema gate — the gate worked, but the
+researcher's `SKILL.md` was under-specified relative to its own schema. See
+"What live testing found" below for the real story and the fix; `rb01`/`rb02`
+are the regression guard for the two defects that caused most of it.
+
+The four remaining escapes are the honest part:
 
 - **b11** — a generic template opening "I hope you are having a great week,"
   which is not on the banned-phrase list. That's a finding, not a pass:
@@ -176,7 +185,7 @@ The four escapes are the honest part:
 `run_eval.py --live` would add real reviewer calls and measure whether the
 model catches those four. **It has not been run** — the account that funded
 this project's live testing ran out of credit first (see below). The number
-stated above is the honest one: 10/14 by code, 0/4 false blocks, and four
+stated above is the honest one: 14/18 by code, 0/5 false blocks, and four
 cases that need a model call this project hasn't paid for yet.
 
 ---
@@ -195,7 +204,7 @@ python orchestrator/run.py --dry-run --scenario generic_email   # RELEASED, afte
 python orchestrator/run.py --dry-run --scenario thin_evidence   # HALTED
 python orchestrator/run.py --dry-run --scenario wordcount_violation  # RELEASED, after 1 revision
 python orchestrator/run.py --dry-run --scenario escalation      # ESCALATED, retry budget exhausted
-python evals/run_eval.py                                        # 10/14 recall, 0/4 false blocks — reproduces "Measured results" above exactly
+python evals/run_eval.py                                        # 14/18 recall, 0/5 false blocks — reproduces "Measured results" above exactly
 python orchestrator/test_jsonio.py                               # 6/6 — the JSON-extraction parser tests
 ```
 
@@ -219,7 +228,7 @@ spend figure is replaced with the actual measured count it was standing in
 for. A repo whose thesis is "unsupported claims get blocked" should show
 that check on itself too.
 
-`run_eval.py --live` is the only thing standing between "10/14, 0/4 false
+`run_eval.py --live` is the only thing standing between "14/18, 0/5 false
 blocks" and a real measurement of whether the QA reviewer catches the four
 escapes. See "Measured results" above for why that number isn't in this
 document yet.
@@ -256,17 +265,30 @@ error that reads like a model problem and is actually a budget problem, the
 same class of bug the researcher's own `SKILL.md` names.
 
 **What live behavior showed, once the infra was fixed, matched this
-project's own thesis about the drafter — but for the researcher too.** Across
-13 live runs, the researcher repeatedly overran its own declared field-length
-limits (`marketing_task.description`, capped at 400 characters, ran over by
-several dozen on at least 2 separate live runs) and invented non-conforming
-claim IDs on at least 3 separate live runs. Both counts are floors, not exact
-totals: the schema gate records only the *first* validation error per run
-(see "Known limitations" in `ARCHITECTURE.md`), so a second violation hiding
-behind an earlier one in the same run was never persisted anywhere and can't
-be recovered now. Every instance actually caught was rejected without retry,
-per this system's core invariant: malformed output is a prompt bug, not a
-flake, and silently retrying it hides the bug.
+project's own thesis about the drafter — but for the researcher too, and
+worse than a couple of stray runs.** Of the 13 live runs, 12 were `REJECTED`
+at the researcher's own schema gate. A full audit of every gate detail — not
+just the first two shapes noticed at the time — found 7 of those 12 were
+exactly two defects: a field over its character cap (4 runs, across
+`marketing_task.description`, `marketing_task.why_ai_helps`, and
+`what_they_sell.summary`) and a non-conforming `claim_id` like `c1b` instead
+of a plain integer (3 runs). The other 5 were unrelated: 3 output-budget
+truncations at the drafter/QA stage (already fixed in an earlier pass), a
+citation-markup leak, and one run missing a required field outright. The gate
+worked correctly every time — this was the researcher's own `SKILL.md` under-
+specifying two of its own schema's constraints, not a gate failure.
+
+**That's fixed now, in the source — not yet proven live.** The prompt told
+the model to count *characters* before emitting a field, which a model does
+unreliably; it now gives an explicit word budget with real margin instead,
+plus explicit `claim_id` examples and two more gaps the same audit surfaced
+(`evidence_type`'s enum and the required date format were never stated at
+all). A new `research_brief_precheck()` also catches all of these before raw
+schema validation runs, with a message that names the field and the actual
+number instead of a jsonschema dump truncated mid-string. Golden-set cases
+`rb01`–`rb04` guard against a regression. No live run has happened since —
+the honest next step is running a few fresh ones and seeing whether the fix
+holds against a real model, not declaring it fixed from the fixtures alone.
 
 **One run is worth reading in full.** A live run against Sonos went researcher
 → drafter → QA cleanly, and the QA reviewer (Opus) caught a real `claim_drift`

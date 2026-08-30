@@ -55,6 +55,24 @@ def case(cid, label, failure_mode, caught_by, mutate=None, note=""):
     })
 
 
+def research_case(cid, label, failure_mode, caught_by, mutate, note=""):
+    """A researcher-stage case: mutates a clone of the brief itself, not the
+    draft. Tests research_brief_precheck (Gate 2's field-level precheck),
+    not deterministic_checks. See evals/run_eval.py's stage branch."""
+    b = clone(BRIEF)
+    mutate(b)
+    CASES.append({
+        "id": cid,
+        "label": label,
+        "failure_mode": failure_mode,
+        "caught_by": caught_by,
+        "note": note,
+        "stage": "researcher",
+        "brief": b,
+        "draft": clone(BASE),           # unused at this stage; kept for shape
+    })
+
+
 # ---------------------------------------------------------------- clean cases
 case("g01", "good", None, "none", None,
      "Baseline. Must pass every gate. Blocking it is a false positive.")
@@ -264,6 +282,59 @@ def _unsupported(d):
 
 case("b14", "bad", "unsupported_metric", "model", _unsupported,
      "Invented statistic attached to a real claim id. The number is not in c3.")
+
+
+# ------------------------------------------- researcher-stage failures
+# The gate worked; the researcher's own output didn't respect its schema.
+# 12 of 13 live runs were rejected here for exactly these two shapes — added
+# after fixing skills/researcher/SKILL.md and the precheck, so a regression
+# can't reintroduce either without the eval catching it.
+
+def _over_length_description(b):
+    b["marketing_task"]["description"] = (
+        "Sonos publishes extensive educational content: setup guides, product "
+        "documentation, quick-start materials, and dealer training content across "
+        "multiple channels. Maintains dedicated trainer network and online learning "
+        "portal for installer partners. Creates automated educational journeys for "
+        "new customers, showcasing system expansion benefits. This content production "
+        "requires continuous updates, testing, and multi-format adaptation."
+    )  # 434 chars, over the 400-char schema cap — the real 65de63f2 shape
+
+
+research_case("rb01", "bad", "description_over_400_chars", "code", _over_length_description,
+              "marketing_task.description exceeds the 400-char cap. The real live shape "
+              "that rejected 65de63f2 and 0f8a2da1.")
+
+
+def _malformed_claim_id(b):
+    b["claims"][0]["claim_id"] = "c1b"
+
+
+research_case("rb02", "bad", "malformed_claim_id", "code", _malformed_claim_id,
+              "A lettered-variant claim_id (c1b) instead of a plain next integer. The "
+              "real live shape that rejected 06e8aa4d and 68ec5335.")
+
+
+def _invalid_evidence_type(b):
+    b["marketing_task"]["evidence_type"] = "job posting"  # space, not the enum's underscore
+
+
+research_case("rb03", "bad", "invalid_evidence_type", "code", _invalid_evidence_type,
+              "evidence_type must be one of six exact enum strings. A near-miss like "
+              "'job posting' (space instead of underscore) is still invalid.")
+
+
+def _malformed_date(b):
+    b["recent_news"]["published_date"] = "June 23, 2026"
+
+
+research_case("rb04", "bad", "malformed_date", "code", _malformed_date,
+              "published_date must be YYYY-MM-DD. Prose dates fail schema's format:date.")
+
+
+research_case("rg01", "good", None, "none", lambda b: None,
+              "Unmutated brief. Must pass the precheck cleanly — guards against the "
+              "precheck itself being too strict.")
 
 
 if __name__ == "__main__":
