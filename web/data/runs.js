@@ -1,5 +1,5 @@
 window.RUNS_DATA = {
-  "source": "13 live API runs against Sonos, from orchestrator/run.py, logged to runs.jsonl. No fixture/dry-run data is included in this file.",
+  "source": "18 live API runs across 5 companies (Basecamp, Figma, Linear, Notion, Sonos), from orchestrator/run.py, logged to runs.jsonl. No fixture/dry-run data is included in this file.",
   "models": {
     "researcher": "claude-haiku-4-5-20251001",
     "drafter": "claude-sonnet-5",
@@ -25,8 +25,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -50,8 +50,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -75,8 +75,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -115,8 +115,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -140,8 +140,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -165,8 +165,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -190,8 +190,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -215,8 +215,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -265,8 +265,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -335,8 +335,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Full researcher output — only the schema validator's error detail survived."
       ],
@@ -420,8 +420,8 @@ window.RUNS_DATA = {
         }
       ],
       "researcher": null,
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Researcher's individual claims and source URLs — the gates confirm 6 sourced claims existed and passed provenance, but the claim text and URLs were never printed to any surviving log.",
         "Full draft email text and [cN] claim references for all 3 attempts — the gates confirm each attempt's schema/deterministic outcome, but the actual email bodies were never printed.",
@@ -501,8 +501,8 @@ window.RUNS_DATA = {
           }
         ]
       },
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Draft and QA verdict — the pipeline never reached those stages; the schema gate stopped it at the researcher, correctly."
       ],
@@ -580,11 +580,1385 @@ window.RUNS_DATA = {
           }
         ]
       },
-      "draft": null,
-      "verdict": null,
+      "drafts": [],
+      "verdicts": [],
       "not_captured": [
         "Draft and QA verdict — the pipeline never reached those stages; the schema gate stopped it at the researcher, correctly."
       ],
+      "not_captured_reason": null
+    },
+    {
+      "run_id": "9cec9ff1",
+      "company": "Sonos",
+      "outcome": "escalated",
+      "score": 6,
+      "attempts": 3,
+      "tokens_in": 133371,
+      "tokens_out": 35069,
+      "duration_s": 355.75,
+      "started_at": 1788123190.8290083,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": true,
+          "detail": "conforms to research_brief.schema.json"
+        },
+        {
+          "gate": "evidence:sufficient",
+          "passed": true,
+          "detail": "5 sourced claims"
+        },
+        {
+          "gate": "provenance:all_claims_sourced",
+          "passed": true,
+          "detail": "every claim carries a retrieved URL"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "1 blocking flag(s): unsupported_claim"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "1 blocking flag(s): claim_drift"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "1 blocking flag(s): unsupported_claim"
+        }
+      ],
+      "researcher": {
+        "company": "Sonos",
+        "resolved_domain": "sonos.com",
+        "insufficient_evidence": false,
+        "what_they_sell": {
+          "summary": "Sonos designs and sells wireless multi-room audio systems including soundbars, speakers, subwoofers, headphones, and portable speakers sold direct-to-consumer and through retail partners globally.",
+          "claim_id": "c1"
+        },
+        "recent_news": {
+          "summary": "Sonos reported Q2 2026 results showing 8% revenue growth and first positive Q2 Adjusted EBITDA in four years, marking what CEO Tom Conrad called a turning point for the company.",
+          "published_date": "2026-05-04",
+          "claim_id": "c2"
+        },
+        "marketing_task": {
+          "description": "Develop consistent technical content marketing on Sonos's tech blog covering AI, audio processing, and product innovation to support product launches and customer education.",
+          "why_ai_helps": "AI can help automate research synthesis, generate technical documentation drafts, and create content outlines from engineering data, accelerating the sparse 1-2 posts per month cadence.",
+          "evidence_type": "content_cadence",
+          "claim_id": "c5"
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "Sonos designs, develops, manufactures and sells multi-room audio products including soundbars, speakers, subwoofers, headphones, and portable speakers.",
+            "source_url": "https://www.sonos.com/en-us/shop",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c2",
+            "statement": "Sonos reported Second Quarter Fiscal 2026 results showing 8% revenue growth, first positive Q2 Adjusted EBITDA in four years, and third consecutive semiannual period of revenue growth improvement.",
+            "source_url": "https://investors.sonos.com/news-and-events/investor-news/latest-news/2026/Sonos-Reports-Second-Quarter-Fiscal-2026-Results/default.aspx",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c3",
+            "statement": "Sonos sells through third-party retail stores, custom installers, select e-commerce retailers, and its website sonos.com, with distribution in over 50 countries.",
+            "source_url": "https://sec.gov/Archives/edgar/data/1314727/000131472718000015/R7.htm",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c4",
+            "statement": "Sonos tech blog publishes approximately 1-2 technical posts per month covering topics like audio processing, machine learning, quality assurance, and product features.",
+            "source_url": "https://tech-blog.sonos.com/",
+            "confidence": "medium",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c5",
+            "statement": "Sonos maintains an active tech blog at tech-blog.sonos.com with posts on AI, Arc Ultra Speech Enhancement, neural networks, and technical product deep-dives.",
+            "source_url": "https://tech-blog.sonos.com/",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          }
+        ],
+        "gaps": [],
+        "run_meta": {
+          "agent": "researcher",
+          "model": "claude-haiku-4-5-20251001",
+          "attempt": 1,
+          "tool_calls": 5,
+          "latency_ms": 19971
+        }
+      },
+      "drafts": [
+        {
+          "draftable": true,
+          "email": {
+            "subject": "sonos's turning point deserves more blog cadence",
+            "body": "Sonos just posted 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years — a turning point moment your team will want to keep talking about [c2]. Your tech blog is the place doing that talking, with deep dives on AI, audio processing, and product innovation like Arc Ultra's speech enhancement work [c5]. But it runs on a thin cadence of one to two posts a month [c4], which means most of that engineering work never becomes content. Faster research synthesis and drafting could turn backlog into a steady publishing rhythm that keeps pace with product launches instead of trailing them. Worth a 15-minute call to see if that's a fit?",
+            "word_count": 114
+          },
+          "account_brief": {
+            "who_they_are": "Sonos designs, manufactures, and sells wireless multi-room audio products — soundbars, speakers, subwoofers, headphones, and portable speakers — sold direct via sonos.com and through retail and custom-installer partners in more than 50 countries [c1][c3].",
+            "why_now": "Sonos just reported Q2 fiscal 2026 results: 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years, the third consecutive semiannual period of improving revenue growth. CEO Tom Conrad called it a turning point for the company. That kind of momentum tends to bring pressure to keep the growth story visible and to back upcoming product launches with credible technical content [c2].",
+            "the_wedge": "Sonos runs an active engineering tech blog covering AI, audio processing, neural networks, and deep dives like Arc Ultra's speech enhancement work — genuinely technical, well-regarded content [c5]. But it publishes only about one to two posts a month, a pace that suggests either a small team or content taking a back seat to engineering priorities [c4]. Faster research synthesis and drafting from engineering source material could lift that cadence without adding headcount.",
+            "what_i_dont_know": [
+              "Who owns the blog day-to-day — a dedicated content marketer, or engineers writing on the side.",
+              "Whether the current cadence is a resourcing constraint or an intentional editorial choice.",
+              "How blog publishing is timed relative to product launches.",
+              "Who on marketing or comms would be the right first contact."
+            ],
+            "opening_question": "Is the blog's cadence a bandwidth problem, or is one to two posts a month intentional?",
+            "word_count": 228
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "both"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 1,
+            "revision_of": null,
+            "latency_ms": 47732
+          }
+        },
+        {
+          "draftable": true,
+          "email": {
+            "subject": "your tech blog vs. your Q2 momentum",
+            "body": "Sonos posted 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years, what CEO Tom Conrad called a turning point for the company [c2]. The tech blog already carries real technical depth, publishing on AI, audio processing, and work like Arc Ultra's speech enhancement [c5], but it puts out only about one to two posts a month [c4]. If engineering output is outpacing what actually gets written up, that gap could matter more as new products launch and buyers look for technical proof points. Faster research synthesis and drafting could help the blog keep pace with the company's momentum instead of trailing it by weeks. Worth a 15-minute call to see if that's actually the bottleneck?",
+            "word_count": 116
+          },
+          "account_brief": {
+            "who_they_are": "Sonos designs, manufactures, and sells wireless multi-room audio products — soundbars, speakers, subwoofers, headphones, and portable speakers — sold direct via sonos.com and through retail and custom-installer partners in more than 50 countries [c1][c3].",
+            "why_now": "Sonos just reported Q2 fiscal 2026 results: 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years, the third consecutive semiannual period of improving revenue growth. CEO Tom Conrad called it a turning point for the company. That kind of momentum tends to bring pressure to keep the growth story visible and to back upcoming product launches with credible technical content [c2].",
+            "the_wedge": "Sonos runs an active engineering tech blog covering AI, audio processing, neural networks, and deep dives like Arc Ultra's speech enhancement work — genuinely technical, well-regarded content [c5]. But it publishes only about one to two posts a month, a pace that suggests either a small team or content taking a back seat to engineering priorities [c4]. We don't know whether engineering output actually exceeds what gets published, but if it does, faster research synthesis and drafting from source material could lift cadence without adding headcount.",
+            "what_i_dont_know": [
+              "Who owns the blog day-to-day — a dedicated content marketer, or engineers writing on the side.",
+              "Whether the current cadence is a resourcing constraint or an intentional editorial choice.",
+              "Whether there's actually a backlog of unwritten technical work, or the team simply doesn't publish often by design.",
+              "How blog publishing is timed relative to product launches.",
+              "Who on marketing or comms would be the right first contact."
+            ],
+            "opening_question": "Is the blog's cadence a bandwidth problem, or is one to two posts a month intentional?",
+            "word_count": 231
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "both"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 2,
+            "revision_of": "attempt-1",
+            "latency_ms": 28294
+          }
+        },
+        {
+          "draftable": true,
+          "email": {
+            "subject": "your tech blog vs. your Q2 momentum",
+            "body": "Sonos just posted 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years, a turning point per CEO Tom Conrad [c2]. Its tech blog already covers real engineering work, including Arc Ultra's speech-enhancement processing and other technical deep dives on audio processing and machine learning, but ships only about one to two posts a month [c4][c5]. That same technical detail is what the custom installers and retail partners carrying Sonos across more than 50 countries need to sell new products with confidence [c3]. Turning research and engineering notes into drafts faster would let the blog keep pace with launches instead of trailing them by weeks. Worth a 15-minute call to see if that's actually the bottleneck?",
+            "word_count": 116
+          },
+          "account_brief": {
+            "who_they_are": "Sonos designs, manufactures, and sells wireless multi-room audio products — soundbars, speakers, subwoofers, headphones, and portable speakers — sold direct via sonos.com and through retail and custom-installer partners in more than 50 countries [c1][c3].",
+            "why_now": "Sonos just reported Q2 fiscal 2026 results: 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years, the third consecutive semiannual period of improving revenue growth. CEO Tom Conrad called it a turning point for the company. That kind of momentum tends to bring pressure to keep the growth story visible and to back upcoming product launches with credible technical content [c2].",
+            "the_wedge": "Sonos runs an active engineering tech blog covering AI, audio processing, neural networks, and deep dives like Arc Ultra's speech-enhancement work — technically substantive content [c5]. But it publishes only about one to two posts a month, a pace that suggests either a small team or content taking a back seat to engineering priorities [c4]. We don't know whether engineering output actually exceeds what gets published, but if it does, faster research synthesis and drafting from source material could lift cadence without adding headcount.",
+            "what_i_dont_know": [
+              "Who owns the blog day-to-day — a dedicated content marketer, or engineers writing on the side.",
+              "Whether the current cadence is a resourcing constraint or an intentional editorial choice.",
+              "Whether there's actually a backlog of unwritten technical work, or the team simply doesn't publish often by design.",
+              "How blog publishing is timed relative to product launches.",
+              "Who on marketing or comms would be the right first contact."
+            ],
+            "opening_question": "Is the blog's cadence a bandwidth problem, or is one to two posts a month intentional?",
+            "word_count": 262
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "both"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 3,
+            "revision_of": "attempt-2",
+            "latency_ms": 63050
+          }
+        }
+      ],
+      "verdicts": [
+        {
+          "score": 6,
+          "pass": false,
+          "flags": [
+            {
+              "type": "unsupported_claim",
+              "severity": "blocking",
+              "location": "which means most of that engineering work never becomes content. Faster research synthesis and drafting could turn backlog into a steady publishing rhythm",
+              "remediation": "The brief contains no claim about the volume of Sonos engineering work, nor about an unpublished content backlog. c4 supports only the publishing cadence; it says nothing about what is or isn't getting written up. Either cut this inference or reframe it explicitly as a question or hypothesis attributed to the sender ('if the engineering output outpaces the blog, ...'), so it is not asserted as a fact about their internal state."
+            },
+            {
+              "type": "claim_drift",
+              "severity": "minor",
+              "location": "But it runs on a thin cadence of one to two posts a month [c4]",
+              "remediation": "c4 is a medium-confidence claim worded 'approximately 1-2 technical posts per month'. The range survives but the hedge is dropped and the assertion is flat. Restore the hedge ('about one to two posts a month'), matching the account brief, which already gets this right."
+            },
+            {
+              "type": "tone",
+              "severity": "minor",
+              "location": "a turning point moment your team will want to keep talking about",
+              "remediation": "The 'turning point' language traces to the CEO quote in the brief, so it is sourced, but telling the recipient what their team will want is presumptuous in sentence one. Attribute it ('Tom Conrad's turning point') or drop the projection and let the numbers carry the opener."
+            },
+            {
+              "type": "tone",
+              "severity": "minor",
+              "location": "sonos's turning point deserves more blog cadence",
+              "remediation": "Subject is 44 characters and on-topic, but 'deserves more blog cadence' is awkward compound-noun phrasing and the lowercased brand name reads as a formatting slip rather than a style choice. Tighten to something a person would type, e.g. 'your tech blog vs. your Q2 momentum'."
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "[COMPANY] just posted 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years — a turning point moment your team will want to keep talking about. Your tech blog is the place doing that talking, with deep dives on AI, audio processing, and product innovation like [PRODUCT]'s speech enhancement work. But it runs on a thin cadence of one to two posts a month, which means most of that engineering work never becomes content. Faster research synthesis and drafting could turn backlog into a steady publishing rhythm that keeps pace with product launches instead of trailing them. Worth a 15-minute call to see if that's a fit?",
+            "still_coherent": false
+          },
+          "notes": "Not a template. The argument is load-bearing on three specifics that survive proper-noun redaction — the 8%/first-positive-Q2-EBITDA-in-four-years figure, the documented 1-2 posts/month cadence, and the speech-enhancement deep dive — and none of them transfer to another prospect. The email would have to be rewritten, not find-and-replaced, to send elsewhere. One blocking issue only: the drafter reasoned past its evidence in the third and fourth sentences, inventing an unpublished engineering backlog that no claim supports. It is a plausible inference and that is exactly why it is dangerous — it reads like a researched observation. Everything mechanical is clean: body 114 words (in 120±10), account brief 228 (in 200-300), subject 44 chars, one ask, no banned phrases, 'What I don't know' present with four genuinely useful unknowns. The pre-check appears to be doing its job; nothing arrived here that code should have caught. This is a one-fix retry — remove or hypothesis-frame the backlog assertion and restore the c4 hedge and it should clear 8.",
+          "run_meta": {
+            "latency_ms": 64379,
+            "model": "claude-opus-5",
+            "agent": "qa-reviewer",
+            "attempt": 1
+          }
+        },
+        {
+          "score": 6,
+          "pass": false,
+          "flags": [
+            {
+              "type": "claim_drift",
+              "severity": "blocking",
+              "location": "genuinely technical, well-regarded content [c5]",
+              "remediation": "Delete \"well-regarded\". Claim c5 establishes only that the tech blog exists and covers AI, Arc Ultra Speech Enhancement, neural networks, and technical deep-dives. It says nothing about how the content is received. A reputational assertion carrying a [c5] tag implies evidence of reception that the brief does not contain, and a rep reading this brief will repeat it on a call. Either cut the adjective or replace with something c5 actually supports (e.g. \"technically substantive\")."
+            },
+            {
+              "type": "generic",
+              "severity": "minor",
+              "location": "that gap could matter more as new products launch and buyers look for technical proof points. Faster research synthesis and drafting could help the blog keep pace with the company's momentum instead of trailing it by weeks.",
+              "remediation": "These two sentences (~47 of 116 words) are portable boilerplate — they would sit unchanged in an email to any company with an engineering blog. Anchor at least one of them to something Sonos-specific from the brief: a named upcoming launch surface, the Arc Ultra speech-enhancement line of work, or the custom-installer/retail channel from c3 where technical proof points actually get used. Do not add a new factual claim to do it."
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "[COMPANY] posted 8% revenue growth and its first positive Q2 Adjusted EBITDA in four years, what CEO [PERSON] called a turning point for the company. The tech blog already carries real technical depth, publishing on AI, audio processing, and work like [PRODUCT]'s speech enhancement, but it puts out only about one to two posts a month. If engineering output is outpacing what actually gets written up, that gap could matter more as new products launch and buyers look for technical proof points. Faster research synthesis and drafting could help the blog keep pace with the company's momentum instead of trailing it by weeks. Worth a 15-minute call to see if that's actually the bottleneck?",
+            "still_coherent": false
+          },
+          "notes": "Swap-test call was closer than the false verdict suggests, and I want the human to see the reasoning. The load-bearing specifics that survive proper-noun redaction are numeric: 8% growth, first positive Q2 Adjusted EBITDA in four years, one-to-two posts a month. Strip those and the email collapses into \"good quarter, slow blog, we can help\" — so it is not a template. But the argument *shape* (financial win + under-published engineering blog) is highly portable, and the back half of the email is where that portability shows. If the drafter keeps reusing this shape across accounts, the swap test will start returning true and I will start blocking on it.\n\nPipeline issue worth fixing: the Tom Conrad \"turning point\" line is attributed to [c2], and it appears in the brief's recent_news.summary — but it is absent from the canonical claims[] entry for c2, which stops at the three financial facts. Two different scopes are shipping under one claim_id. I passed it because the brief as a whole is ground truth, but a stricter reviewer or a stricter run would flag it as unsupported and block, which makes verdicts non-reproducible. The researcher should make claims[].statement the single canonical text and have summary fields quote from it rather than extend it.\n\nAlso note the account brief's \"a pace that suggests either a small team or content taking a back seat to engineering priorities [c4]\" — this is inference, not evidence, and it carries a claim tag. It survives only because the very next sentence explicitly says \"We don't know whether engineering output actually exceeds what gets published.\" That hedge is doing real work; if it is ever dropped in a later revision, the sentence becomes blocking drift.\n\nThis is attempt 2 and it is close. The single blocking finding is a two-word deletion. I expect attempt 3 to pass.",
+          "run_meta": {
+            "agent": "qa-reviewer",
+            "model": "claude-opus-5",
+            "attempt": 2,
+            "latency_ms": 77273
+          }
+        },
+        {
+          "score": 6,
+          "pass": false,
+          "flags": [
+            {
+              "type": "unsupported_claim",
+              "severity": "blocking",
+              "location": "Turning research and engineering notes into drafts faster would let the blog keep pace with launches instead of trailing them by weeks.",
+              "remediation": "Delete 'instead of trailing them by weeks.' No claim in the brief establishes any relationship between blog publishing timing and product launches — the account brief itself lists 'How blog publishing is timed relative to product launches' as an open unknown. Either cut the clause and end the sentence at 'keep pace with launches,' or reframe it as a question rather than an assertion (e.g. 'if the blog is running behind launches, that gap is usually a drafting-speed problem'). Do not assert publishing lag as fact."
+            },
+            {
+              "type": "tone",
+              "severity": "major",
+              "location": "That same technical detail is what the custom installers and retail partners carrying Sonos across more than 50 countries need to sell new products with confidence [c3].",
+              "remediation": "c3 supports the distribution channel and the 50-country figure only. It does not support a claim about what those partners need in order to sell. Hedge the inference so the citation covers only the verifiable half — e.g. 'Sonos sells through custom installers and retail partners in more than 50 countries [c3]; that channel usually runs on technical detail.' Keep the assertion visibly the sender's opinion, not sourced fact."
+            },
+            {
+              "type": "tone",
+              "severity": "minor",
+              "location": "a turning point per CEO Tom Conrad [c2]",
+              "remediation": "The Conrad attribution appears in the brief's recent_news summary under c2 but not in the c2 claim statement itself. It survives, but keep the 'per CEO Tom Conrad' attribution intact on any rewrite — do not restate 'turning point' as the drafter's own characterization of the quarter."
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "[COMPANY] just posted [N]% revenue growth and its first positive Q2 Adjusted EBITDA in four years, a turning point per CEO [PERSON]. Its tech blog already covers real engineering work, including [PRODUCT]'s speech-enhancement processing and other technical deep dives on audio processing and machine learning, but ships only about [N] posts a month. That same technical detail is what the custom installers and retail partners carrying [COMPANY] across more than [N] countries need to sell new products with confidence. Turning research and engineering notes into drafts faster would let the blog keep pace with launches instead of trailing them by weeks. Worth a 15-minute call to see if that's actually the bottleneck?",
+            "still_coherent": false
+          },
+          "notes": "Swap test passes but not comfortably. The load-bearing specifics are the speech-enhancement deep dive (without it, 'covers real engineering work' is an empty compliment) and the custom-installer/retail channel, which is the one argument here that would not transfer to a typical SaaS target. Sentences 4 and 5 are fully portable and would survive on any company. If a future attempt loses the channel sentence, re-run this check hard — the remaining email is a template.\n\nPipeline observation, not a document problem: this is attempt 3, and the failure is the drafter asserting in the email something it explicitly lists as unknown in its own account_brief.what_i_dont_know. That is mechanically detectable. Recommend a pre-check that cross-references email body assertions against the what_i_dont_know entries and rejects before it reaches review — it would have caught this and attempt 2's likely equivalent without burning a QA cycle. Constraints were otherwise clean on arrival (body 116, brief 262, subject 34 chars, single ask, no banned phrases), so the upstream code gate is working for what it covers.",
+          "run_meta": {
+            "latency_ms": 52734,
+            "model": "claude-opus-5",
+            "agent": "qa-reviewer",
+            "attempt": 3
+          }
+        }
+      ],
+      "not_captured": [],
+      "not_captured_reason": null
+    },
+    {
+      "run_id": "304ae488",
+      "company": "Notion",
+      "outcome": "released",
+      "score": 8,
+      "attempts": 3,
+      "tokens_in": 129337,
+      "tokens_out": 44713,
+      "duration_s": 456.64,
+      "started_at": 1788123567.845832,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": true,
+          "detail": "conforms to research_brief.schema.json"
+        },
+        {
+          "gate": "evidence:sufficient",
+          "passed": true,
+          "detail": "5 sourced claims"
+        },
+        {
+          "gate": "provenance:all_claims_sourced",
+          "passed": true,
+          "detail": "every claim carries a retrieved URL"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "1 blocking flag(s): claim_drift"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "score 6 below threshold 8"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": true,
+          "detail": "score 8, no blocking flags"
+        }
+      ],
+      "researcher": {
+        "company": "Notion",
+        "resolved_domain": "notion.so",
+        "insufficient_evidence": false,
+        "what_they_sell": {
+          "summary": "Notion is an all-in-one workspace combining note-taking, task management, databases, project management, and AI features including custom agents and AI Meeting Notes to centralize work and reduce tool sprawl.",
+          "claim_id": "c1"
+        },
+        "recent_news": {
+          "summary": "Q1 2026 revenue grew 64% year-over-year with strong margins and debt-free cash position; Notion completed private equity tender offer valuing company at $11 billion in January 2026.",
+          "published_date": "2026-05-28",
+          "claim_id": "c2"
+        },
+        "marketing_task": {
+          "description": "Produce release notes with structured narratives: major features get hero-image blog posts, minor improvements get monthly roundups with visual hierarchy and impact messaging.",
+          "why_ai_helps": "Release coordination across 15+ features per month into narrative posts, feature grouping logic, impact story generation, and visual asset briefing would be accelerated by AI drafting and optimization.",
+          "evidence_type": "content_cadence",
+          "claim_id": "c5"
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "Notion is a comprehensive workspace that combines note-taking, task management, databases, and AI features into one platform.",
+            "source_url": "https://www.saasworthy.com/blog/notion-pricing-plans",
+            "source_title": "Notion Pricing Plans (2026)",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c2",
+            "statement": "Q1 2026 revenue grew 64% YoY with strong margins and debt-free cash-rich position.",
+            "source_url": "https://tracxn.com/d/companies/notion/__LQ8wyN9zLT-OwulhqbMYvw0Ayznneiugbu_OaKuGD4U",
+            "source_title": "Notion - 2026 Company Profile, Team, Funding & Competitors - Tracxn",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c3",
+            "statement": "Notion completed private equity tender offer totaling approximately $270 million, with a transaction valuation of $11 billion in January 2026.",
+            "source_url": "https://tracxn.com/d/companies/notion/__LQ8wyN9zLT-OwulhqbMYvw0Ayznneiugbu_OaKuGD4U",
+            "source_title": "Notion - 2026 Company Profile, Team, Funding & Competitors - Tracxn",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c4",
+            "statement": "Notion's 'What's New' page uses magazine-style layout with hero images for major features and monthly roundups for minor improvements.",
+            "source_url": "https://www.worknotes.ai/blog/release-notes-examples",
+            "source_title": "Release Notes Examples: 30+ From Companies That Get It",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c5",
+            "statement": "Notion publishes major feature releases as dedicated blog posts with narrative and visual hierarchy, with minor improvements grouped into monthly roundups.",
+            "source_url": "https://www.notion.com/releases/2026-03-26",
+            "source_title": "March 26, 2026 – Notion 3.4, part 1",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          }
+        ],
+        "gaps": [],
+        "run_meta": {
+          "agent": "researcher",
+          "model": "claude-haiku-4-5-20251001",
+          "attempt": 1,
+          "tool_calls": 6,
+          "latency_ms": 21944
+        }
+      },
+      "drafts": [
+        {
+          "draftable": true,
+          "email": {
+            "subject": "how Notion decides what gets a hero image",
+            "body": "Notion's \"What's New\" page runs on a clear structure: major features get hero-image blog posts, minor ones get folded into monthly roundups [c4]. That split gets remade every month, across 15+ shipped features, each one sorted into \"story\" or \"summary\" and then written up with its own narrative and visual hierarchy [c5]. That's a recurring editorial workload, not a one-off content project, and someone has to make the same judgment calls on a fixed monthly clock. With revenue up 64% year-over-year, the release cadence probably isn't slowing down anytime soon [c2]. Worth 15 minutes to see whether the sorting and drafting stage could run faster without losing the hierarchy that makes the page work?",
+            "word_count": 114
+          },
+          "account_brief": {
+            "who_they_are": "Notion is an all-in-one workspace — notes, tasks, databases, project management, and AI agents — built to replace tool sprawl for teams [c1].",
+            "why_now": "Q1 2026 revenue grew 64% year-over-year with strong margins and a debt-free balance sheet, and Notion just closed a private equity tender offer valuing the company at $11 billion in January 2026 [c2][c3]. That combination — fast growth plus fresh capital and investor attention — usually means more pressure on marketing and content teams to show visible momentum, not less.",
+            "the_wedge": "Notion already runs a structured release cadence: major features get dedicated hero-image blog posts, minor improvements get folded into monthly roundups with their own visual hierarchy [c4][c5]. That's a repeating production task — sorting 15+ features a month into \"story\" or \"summary,\" then writing and briefing each — which is exactly the kind of recurring editorial judgment call that AI drafting and grouping tools can accelerate. Likely owned by product marketing or a content/communications lead, though the brief doesn't name who runs it.",
+            "what_i_dont_know": [
+              "Team size or tooling behind the release notes process.",
+              "Whether the release notes work is fully in-house or partly agency.",
+              "Who specifically owns the monthly roundup decision.",
+              "Whether the $11B valuation event changed marketing headcount or budget."
+            ],
+            "opening_question": "How much of deciding what's hero-worthy versus roundup material is still a manual call each month?",
+            "word_count": 213
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "both"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 1,
+            "revision_of": null,
+            "latency_ms": 66611
+          }
+        },
+        {
+          "draftable": true,
+          "email": {
+            "subject": "how notion sorts hero-worthy releases",
+            "body": "Notion's What's New page splits releases into two tracks: major features get their own hero-image blog post, minor ones get grouped into a monthly roundup with its own visual hierarchy [c4][c5]. Someone has to make that story-or-summary call every month, then write and brief the visuals for whichever features land where [c5]. Q1 revenue grew 64% year-over-year [c2], and Notion closed a private equity tender offer valuing it at $11 billion in January [c3] — the kind of moment when marketing needs to look sharp fast, not scramble. When the sorting and drafting step moves faster, there's more room to get each post right instead of racing the calendar. Worth 15 minutes to see if that stage could run smoother?",
+            "word_count": 120
+          },
+          "account_brief": {
+            "who_they_are": "Notion is an all-in-one workspace — notes, tasks, databases, project management, and AI agents — built to replace tool sprawl for teams [c1].",
+            "why_now": "Q1 2026 revenue grew 64% year-over-year with strong margins and a debt-free balance sheet, and Notion just closed a private equity tender offer valuing the company at $11 billion in January 2026 [c2][c3]. That combination — fast growth plus fresh capital and investor attention — usually means more pressure on marketing and content teams to show visible momentum, not less.",
+            "the_wedge": "Notion already runs a structured release cadence: major features get dedicated hero-image blog posts, minor improvements get folded into monthly roundups with their own visual hierarchy [c4][c5]. That's a repeating production task — sorting each release into \"story\" or \"summary,\" then writing and briefing each — which is exactly the kind of recurring editorial judgment call that AI drafting and grouping tools can accelerate. Likely owned by product marketing or a content/communications lead, though the brief doesn't name who runs it.",
+            "what_i_dont_know": [
+              "Team size or tooling behind the release notes process.",
+              "Whether the release notes work is fully in-house or partly agency.",
+              "Who specifically owns the monthly roundup decision.",
+              "Whether the $11B valuation event changed marketing headcount or budget.",
+              "The actual monthly release volume isn't sourced in the brief — needs confirming before quoting a cadence number."
+            ],
+            "opening_question": "How much of deciding what's hero-worthy versus roundup material is still a manual call each month?",
+            "word_count": 236
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "both"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 2,
+            "revision_of": "attempt-1",
+            "latency_ms": 46373
+          }
+        },
+        {
+          "draftable": true,
+          "email": {
+            "subject": "how notion sorts hero-worthy releases",
+            "body": "Notion's What's New page splits releases into two tracks: major features get a dedicated hero-image blog post with narrative and visual hierarchy, while minor improvements get grouped into a monthly roundup [c4][c5]. Someone has to decide, feature by feature, whether it earns the story treatment or the roundup, then write the narrative and brief the visuals for whichever track it lands in [c5]. That sorting-and-drafting cycle runs every month, driven by Notion's own release schedule rather than a single launch [c5]. On a 15-minute call, I'd walk through how AI could draft a first pass at that sorting and narrative writing, so your team edits instead of starting from a blank page each cycle. Worth 15 minutes to look at it?",
+            "word_count": 121
+          },
+          "account_brief": {
+            "who_they_are": "Notion is an all-in-one workspace — notes, tasks, databases, project management, and AI agents — built to replace tool sprawl for teams [c1].",
+            "why_now": "Q1 2026 revenue grew 64% year-over-year with strong margins and a debt-free balance sheet, and Notion closed a private equity tender offer valuing the company at $11 billion in January 2026 [c2][c3]. Growth and fresh capital at that scale often bring more scrutiny on marketing output, though the brief doesn't tie these events directly to the release-notes process.",
+            "the_wedge": "Notion runs a structured release cadence: major features get dedicated hero-image blog posts with narrative and visual hierarchy, while minor improvements are grouped into monthly roundups [c4][c5]. Someone decides, feature by feature, which track each release belongs in, then writes the narrative and briefs visuals for the hero posts — a recurring editorial judgment call every month, well suited to AI-assisted drafting and sorting. Likely owned by product marketing or a content/communications lead, though the brief doesn't name who runs it.",
+            "what_i_dont_know": [
+              "Team size or tooling behind the release notes process.",
+              "Whether the release notes work is fully in-house or partly agency.",
+              "Who specifically owns the monthly roundup decision.",
+              "Whether the $11B valuation event changed marketing headcount or budget.",
+              "Actual monthly release volume isn't specified in the brief — needs confirming before citing a cadence number."
+            ],
+            "opening_question": "How much of deciding what's hero-worthy versus roundup material is still a manual call each month?",
+            "word_count": 232
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "both"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 3,
+            "revision_of": "attempt-2",
+            "latency_ms": 87555
+          }
+        }
+      ],
+      "verdicts": [
+        {
+          "score": 6,
+          "pass": false,
+          "flags": [
+            {
+              "type": "claim_drift",
+              "severity": "blocking",
+              "location": "That split gets remade every month, across 15+ shipped features, each one sorted into \"story\" or \"summary\" and then written up with its own narrative and visual hierarchy [c5].",
+              "remediation": "The \"15+ shipped features\" per month figure is not in claim c5. Claim c5 states only that major releases get dedicated posts with narrative and visual hierarchy and minor ones are grouped into monthly roundups — no volume figure. The number appears only in the brief's marketing_task.why_ai_helps field, which is the researcher's inference about where AI would help, not a sourced fact. Either drop the volume figure entirely and lead with the sorting judgment itself, or request a sourced claim for release volume before asserting it. Same fix required in account_brief.the_wedge (\"sorting 15+ features a month into \\\"story\\\" or \\\"summary\\\"\")."
+            },
+            {
+              "type": "claim_drift",
+              "severity": "minor",
+              "location": "With revenue up 64% year-over-year, the release cadence probably isn't slowing down anytime soon [c2].",
+              "remediation": "Claim c2 scopes the 64% growth to Q1 2026 specifically. The email drops the period and restates it as general revenue growth. Add the qualifier: \"With Q1 revenue up 64% year-over-year...\". The account_brief handles this correctly; make the email match."
+            },
+            {
+              "type": "tone",
+              "severity": "minor",
+              "location": "With revenue up 64% year-over-year, the release cadence probably isn't slowing down anytime soon",
+              "remediation": "The revenue-to-cadence link is the weakest inference in the email — growth does not mechanically imply shipping volume, and the hedge (\"probably\") signals the writer knows it. Either tie the financial fact to something concrete (headcount pressure, investor visibility) or cut the sentence and spend the words on the sorting problem, which is the actual wedge."
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "[COMPANY]'s \"[PAGE]\" page runs on a clear structure: major features get hero-image blog posts, minor ones get folded into monthly roundups. That split gets remade every month, across [N]+ shipped features, each one sorted into \"story\" or \"summary\" and then written up with its own narrative and visual hierarchy. That's a recurring editorial workload, not a one-off content project, and someone has to make the same judgment calls on a fixed monthly clock. With revenue up [X]% year-over-year, the release cadence probably isn't slowing down anytime soon. Worth 15 minutes to see whether the sorting and drafting stage could run faster without losing the hierarchy that makes the page work?",
+            "still_coherent": false
+          },
+          "notes": "Swap test was borderline and I want the human to see my reasoning rather than just the boolean. The opening frame (\"your What's New page runs on a clear structure: major features get hero images, minor ones get roundups\") would transfer verbatim to Linear, Figma, Vercel, or any other changelog publisher using the same pattern. What saves it is that the hero/roundup split is a researched observation with a source (c4, c5) rather than an assumption, and the closing ask is built specifically on the sorting decision that split creates — remove the split and there is no email left. Ruled not-a-template, but a drafter who wants a comfortable margin should anchor the opener to something only this page does.\n\nPipeline issue worth fixing upstream: the research brief attaches claim_id c5 to a marketing_task block whose why_ai_helps field contains a quantitative assertion (\"15+ features per month\") that does not appear in the c5 claim statement. That structure invites exactly the drift flagged here — the drafter cited in good faith and still ended up asserting an unsourced number. Recommend either (a) the researcher promotes any figure appearing in marketing_task to its own entry in claims[] with a source, or (b) the drafter contract states explicitly that marketing_task.why_ai_helps is analyst inference and not citable. This will recur across accounts otherwise.\n\nCode-checked constraints all clean on arrival: body 114 words (in range even after excluding the five [cN] tokens), subject 41 chars, account brief 213 words, one ask, \"What I don't know\" present with four substantive entries, no banned phrases. Pre-check has no hole I can see.\n\nOne retry should clear this. The email is structurally sound and the opener carries real information; the only blocking issue is a single number that needs to be sourced or removed.",
+          "run_meta": {
+            "latency_ms": 69249,
+            "model": "claude-opus-5",
+            "agent": "qa-reviewer",
+            "attempt": 1
+          }
+        },
+        {
+          "score": 6,
+          "pass": false,
+          "flags": [
+            {
+              "type": "tone",
+              "severity": "major",
+              "location": "Worth 15 minutes to see if that stage could run smoother?",
+              "remediation": "The CTA is time-boxed but the email never states what the sender actually does. A reader finishes this with no idea what 'run smoother' means in practice or who is offering it. Add one clause naming the concrete offer (e.g. what the sender would show or do in those 15 minutes) so the ask points at something specific rather than at an unnamed improvement."
+            },
+            {
+              "type": "generic",
+              "severity": "major",
+              "location": "the kind of moment when marketing needs to look sharp fast, not scramble",
+              "remediation": "This is an inferred-pressure trope that attaches to any recently-funded company and does no work here — it never connects the tender offer or revenue growth to the release-notes cadence that the rest of the email is about. Either cut the funding/revenue sentence and reinvest the ~25 words in the release-notes observation, or make the connection explicit and non-generic."
+            },
+            {
+              "type": "generic",
+              "severity": "minor",
+              "location": "When the sorting and drafting step moves faster, there's more room to get each post right instead of racing the calendar.",
+              "remediation": "Content-free value hypothesis: it does not say what changes, who does it, or what 'faster' looks like. Replace with a specific statement about the sorting or drafting step, or delete it and give the words to the ask."
+            },
+            {
+              "type": "claim_drift",
+              "severity": "minor",
+              "location": "minor ones get grouped into a monthly roundup with its own visual hierarchy [c4][c5]",
+              "remediation": "Not blocking — this traces to the brief's own marketing_task wording ('minor improvements get monthly roundups with visual hierarchy'). But c5's underlying statement attaches 'narrative and visual hierarchy' to the dedicated blog posts, not the roundups. Tighten to what c4/c5 assert directly (major features get hero-image posts; minor improvements get grouped into monthly roundups) rather than importing the visual-hierarchy attribute onto the roundup."
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "[COMPANY]'s [PAGE] page splits releases into two tracks: major features get their own hero-image blog post, minor ones get grouped into a monthly roundup with its own visual hierarchy. Someone has to make that story-or-summary call every month, then write and brief the visuals for whichever features land where. Q1 revenue grew [N]% year-over-year, and [COMPANY] closed a private equity tender offer valuing it at $[N] billion in [MONTH] — the kind of moment when marketing needs to look sharp fast, not scramble. When the sorting and drafting step moves faster, there's more room to get each post right instead of racing the calendar. Worth 15 minutes to see if that stage could run smoother?",
+            "still_coherent": false
+          },
+          "notes": "Provenance is clean — every factual assertion in the body carries a valid claim_ref and none of them drift materially. Worth noting the drafter correctly declined to quote the '15+ features per month' figure from marketing_task.why_ai_helps (which is analyst inference, not a sourced claim) and flagged it in what_i_dont_know instead. That is the behavior we want and it should not be punished. Pre-check appears healthy: body ~115-120 words, subject 37 chars, account brief 236 words, no banned phrases, single ask — nothing arrived here that code should have caught. Pipeline observation rather than document observation: this is attempt 2 and both attempts have produced a CTA with no stated offer. The email spends 25 of 120 words on funding/revenue that never connect to the release-notes thesis, then runs out of room to say what the sender does. If the drafter prompt does not currently require one clause naming the concrete offer, that is a gap worth closing at the instruction level rather than through another retry. Minor, not flagged: subject line lowercases the brand ('notion'), which reads as stylistic rather than sloppy but is inconsistent with the body's capitalization.",
+          "run_meta": {
+            "agent": "qa-reviewer",
+            "model": "claude-opus-5",
+            "attempt": 2,
+            "latency_ms": 94847
+          }
+        },
+        {
+          "score": 8,
+          "pass": true,
+          "flags": [
+            {
+              "type": "tone",
+              "severity": "major",
+              "location": "On a 15-minute call, I'd walk through how AI could draft a first pass at that sorting and narrative writing, so your team edits instead of starting from a blank page each cycle. Worth 15 minutes to look at it?",
+              "remediation": "The '15 minutes' duration is stated twice in two consecutive sentences, which reads like an unedited seam between the value line and the ask. Keep the duration in one place only — either name it in the setup and close with a bare ask ('Worth a look?'), or drop it from the setup and keep it in the closing question."
+            },
+            {
+              "type": "generic",
+              "severity": "minor",
+              "location": "so your team edits instead of starting from a blank page each cycle",
+              "remediation": "'Starting from a blank page' is stock AI-copywriting framing and is the one clause in the body that would survive unchanged in an email to any content team. Replace with something anchored to the observed two-track structure — e.g. the track-assignment call itself arriving pre-sorted, or the roundup grouping arriving pre-drafted."
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "[COMPANY]'s [PAGE] page splits [OUTPUT] into two tracks: [MAJOR ITEMS] get a dedicated [TREATMENT A] with narrative and visual hierarchy, while [MINOR ITEMS] get grouped into a [TREATMENT B]. Someone has to decide, item by item, whether it earns [TREATMENT A] or [TREATMENT B], then write the narrative and brief the visuals for whichever track it lands in. That sorting-and-drafting cycle runs every [INTERVAL], driven by [COMPANY]'s own [SCHEDULE] rather than a single launch. On a 15-minute call, I'd walk through how AI could draft a first pass at that sorting and narrative writing, so your team edits instead of starting from a blank page each cycle. Worth 15 minutes to look at it?",
+            "still_coherent": false
+          },
+          "notes": "Provenance is clean. Every factual assertion in the body traces to c4/c5 and is restated without inflation — notably the drafter declined to import the '15+ features per month' figure from marketing_task.why_ai_helps (which is task framing, not a claim) and instead logged it under what_i_dont_know as needing confirmation. That is the correct handling and worth reinforcing upstream; earlier attempts in this run appear to have been where that number was tested.\n\nSwap-test call, since it is the disputable one: redacted, the email loses its entire argument. The body is 78 of 118 words describing one observed editorial structure, and the ask is a direct function of that structure. It reads as coherent English but not as a sendable email — 'your [PAGE] splits [OUTPUT] into two tracks' is only meaningful if that structure is verifiably true of the recipient, and it is not true of most SaaS release blogs, which run a flat changelog. I record this as passing, but flag for the human that the specificity here sits at the category level (SaaS release-notes practice) rather than at something only Notion does. A stricter reviewer could rule the other way. If this account converts to a template across other targets, that is the signal that the swap test was too lenient here.\n\nConstraints all clean on arrival — body 118 words plus 3 citation tokens against a 110–130 band, subject 37 chars, brief 232 words, one ask, what_i_dont_know populated with five substantive entries including two epistemic hedges. No evidence of a pre-check hole in this run.\n\nPipeline note: this is attempt 3 and it lands exactly at the gate. The retry loop did its job, but three attempts to reach a bare pass suggests the drafter's first-pass instructions are under-specifying the closing ask — both remaining flags are in the last two sentences, and both are the kind of thing a drafter fixes in one edit if told the ask must state its duration exactly once and must not use blank-page framing. Consider adding those two lines to the drafter prompt rather than spending retry cycles on them.",
+          "run_meta": {
+            "latency_ms": 68759,
+            "model": "claude-opus-5",
+            "agent": "qa-reviewer",
+            "attempt": 3
+          }
+        }
+      ],
+      "not_captured": [],
+      "not_captured_reason": null
+    },
+    {
+      "run_id": "67d7ae18",
+      "company": "Figma",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 104530,
+      "tokens_out": 1643,
+      "duration_s": 24.32,
+      "started_at": 1788124033.397699,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "what_they_sell.summary: 369 characters, exceeds 300-char cap by 69; recent_news.summary: 363 characters, exceeds 300-char cap by 63"
+        }
+      ],
+      "researcher": {
+        "company": "Figma",
+        "resolved_domain": "figma.com",
+        "insufficient_evidence": false,
+        "what_they_sell": {
+          "summary": "<cite index=\"5-6,5-7\">Figma is a browser-based tool that allows users to edit vector graphics, collaborate, and create prototypes, helping teams create, test, and ship better end-to-end designs.</cite> <cite index=\"3-1,6-1\">The company offers flexible pricing plans—Starter, Professional, Organization, and Enterprise—ranging from free to $90 per user per month.</cite>",
+          "claim_id": "c1"
+        },
+        "recent_news": {
+          "summary": "<cite index=\"13-2\">Q2 2026 revenue grew 48% year-over-year to $370.1 million, marking Figma's third straight quarter of accelerated revenue growth.</cite> <cite index=\"13-4,13-5\">Code Layers, the Figma agent, and new creative capabilities expand AI consumption, and Figma raised full-year revenue guidance based on sustained seat expansion and AI adoption.</cite>",
+          "published_date": "2026-08-05",
+          "claim_id": "c2"
+        },
+        "marketing_task": {
+          "description": "Produce technical product documentation and promotional content across multiple product lines. Figma ships features monthly across Design, Make, Sites, Buzz, Draw, Weave, Slides, Motion, and agent capabilities.",
+          "why_ai_helps": "AI can streamline drafting release notes, feature descriptions, and launch blog posts from engineering specifications, reducing content production cycles from days to hours while maintaining consistency.",
+          "evidence_type": "content_cadence",
+          "claim_id": "c3"
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "Figma is a browser-based collaborative design and prototyping platform sold on per-seat subscription models ranging from free to $90/month across four tiers.",
+            "source_url": "https://www.saasworthy.com/product/figma/pricing",
+            "source_title": "Figma Pricing & Plans (August 2026) | SaaSworthy",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c2",
+            "statement": "Figma reported Q2 2026 revenue of $370.1 million, a 48% year-over-year increase and its third consecutive quarter of accelerated growth.",
+            "source_url": "https://www.businesswire.com/news/home/20260805158853/en/Figma-Announces-Second-Quarter-2026-Financial-Results",
+            "source_title": "Figma Announces Second Quarter 2026 Financial Results",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c3",
+            "statement": "Figma maintains an active release and newsroom cadence, publishing multiple product updates monthly across nine product lines including new AI agent features, code layers, and creative tools.",
+            "source_url": "https://www.figma.com/newsroom/",
+            "source_title": "Figma Newsroom | Latest News, Announcements & Insights",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c4",
+            "statement": "Figma released agent skills authoring, MCP server administration, and vector editing updates in August 2026 alone, showing sustained feature velocity.",
+            "source_url": "https://releasebot.io/updates/figma",
+            "source_title": "Figma Release Notes - August 2026 Latest Updates",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          }
+        ],
+        "gaps": [],
+        "run_meta": {
+          "agent": "researcher",
+          "model": "claude-haiku-4-5-20251001",
+          "attempt": 1,
+          "tool_calls": 6,
+          "latency_ms": 22758
+        }
+      },
+      "drafts": [],
+      "verdicts": [],
+      "not_captured": [
+        "Draft and QA verdict — the pipeline never reached those stages; the schema gate stopped it at the researcher, correctly."
+      ],
+      "not_captured_reason": null
+    },
+    {
+      "run_id": "ed279651",
+      "company": "Linear",
+      "outcome": "rejected",
+      "score": null,
+      "attempts": 0,
+      "tokens_in": 96828,
+      "tokens_out": 1725,
+      "duration_s": 24.25,
+      "started_at": 1788124077.1852973,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": false,
+          "detail": "what_they_sell.summary: 410 characters, exceeds 300-char cap by 110"
+        }
+      ],
+      "researcher": {
+        "company": "Linear",
+        "resolved_domain": "linear.app",
+        "insufficient_evidence": false,
+        "what_they_sell": {
+          "summary": "<cite index=\"3-1\">Linear is a modern, high-performance project management tool and issue tracker purpose-built for software development teams, known for its blazing-fast interface, keyboard-first navigation, and opinionated workflow design.</cite> <cite index=\"22-3,22-4\">Linear offers one free plan, two paid tiers (Basic at $10/user/month and Business at $16/user/month), and a custom Enterprise plan.</cite>",
+          "claim_id": "c1"
+        },
+        "recent_news": {
+          "summary": "<cite index=\"12-1,12-2\">Linear reached $100M in annual recurring revenue in July 2026, with more than 40,000 companies paying for Linear, net revenue retention of 177%, and enterprise customers including Salesforce and Figma added in early 2026.</cite>",
+          "published_date": "2026-07-06",
+          "claim_id": "c2"
+        },
+        "marketing_task": {
+          "description": "<cite index=\"44-1\">Linear publishes customer stories and internal essays on their 'Now' section, with recent posts including 'How Cursor builds with Linear' (Feb 2026) and 'How Dandelion Chocolate scales craft' (Jan 2026).</cite> The output averages 2-3 pieces per month mixing customer narratives with leadership commentary.",
+          "why_ai_helps": "Customer story production is labor-intensive: interviewing customers, synthesizing responses into 1,000+ word narratives, editing for brand voice, and formatting for publication. AI can rapidly transform raw interview transcripts or customer outlines into first-draft stories, cutting researcher and writer time while maintaining Linear's consistent storytelling style.",
+          "evidence_type": "content_cadence",
+          "claim_id": "c3"
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "Linear is a modern, high-performance project management tool purpose-built for software development teams, known for blazing-fast interface, keyboard-first navigation, and opinionated workflow design.",
+            "source_url": "https://www.tooljunction.io/ai-tools/linear-app",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c2",
+            "statement": "Linear reached $100M in annual recurring revenue in July 2026 with more than 40,000 paying companies, net revenue retention of 177%, and enterprise customers including Salesforce and Figma added in early 2026.",
+            "source_url": "https://sacra.com/c/linear/",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c3",
+            "statement": "Linear publishes regular customer stories and internal product essays on their 'Now' content hub, with examples like 'How Cursor builds with Linear' (February 2026) and 'How Dandelion Chocolate scales craft' (January 2026).",
+            "source_url": "https://linear.app/now",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c4",
+            "statement": "Linear operates with a paid user model across Free, Basic ($10/user/month), Business ($16/user/month), and Enterprise tiers, all billed annually for paid plans.",
+            "source_url": "https://www.usecarly.com/blog/linear-pricing/",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c5",
+            "statement": "Linear has posted approximately 2-3 pieces per month on its 'Now' section over recent months, combining customer stories with internal team essays on product strategy and culture.",
+            "source_url": "https://linear.app/now",
+            "confidence": "medium",
+            "retrieved_at": "2026-08-30"
+          }
+        ],
+        "gaps": [],
+        "run_meta": {
+          "agent": "researcher",
+          "model": "claude-haiku-4-5-20251001",
+          "attempt": 1,
+          "tool_calls": 5,
+          "latency_ms": 23096
+        }
+      },
+      "drafts": [],
+      "verdicts": [],
+      "not_captured": [
+        "Draft and QA verdict — the pipeline never reached those stages; the schema gate stopped it at the researcher, correctly."
+      ],
+      "not_captured_reason": null
+    },
+    {
+      "run_id": "dbb8cb99",
+      "company": "Basecamp",
+      "outcome": "escalated",
+      "score": 4,
+      "attempts": 3,
+      "tokens_in": 126456,
+      "tokens_out": 27383,
+      "duration_s": 267.08,
+      "started_at": 1788124131.1595538,
+      "gates": [
+        {
+          "gate": "schema:research_brief",
+          "passed": true,
+          "detail": "conforms to research_brief.schema.json"
+        },
+        {
+          "gate": "evidence:sufficient",
+          "passed": true,
+          "detail": "5 sourced claims"
+        },
+        {
+          "gate": "provenance:all_claims_sourced",
+          "passed": true,
+          "detail": "every claim carries a retrieved URL"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": false,
+          "detail": "word_count_selfreport: model claimed 119, actual 123"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": true,
+          "detail": "word count, phrases, claim refs clean"
+        },
+        {
+          "gate": "schema:qa_verdict",
+          "passed": true,
+          "detail": "conforms to qa_verdict.schema.json"
+        },
+        {
+          "gate": "release_gate (>= 8)",
+          "passed": false,
+          "detail": "1 blocking flag(s): claim_drift"
+        },
+        {
+          "gate": "schema:draft_package",
+          "passed": true,
+          "detail": "conforms to draft_package.schema.json"
+        },
+        {
+          "gate": "deterministic",
+          "passed": false,
+          "detail": "word_count_selfreport: model claimed 115, actual 119"
+        }
+      ],
+      "researcher": {
+        "company": "Basecamp",
+        "resolved_domain": "basecamp.com",
+        "insufficient_evidence": false,
+        "what_they_sell": {
+          "summary": "Cloud-based project management platform combining task management, team chat, file sharing, and team collaboration in one integrated workspace. Serves small to medium-sized teams and agencies.",
+          "claim_id": "c1"
+        },
+        "recent_news": {
+          "summary": "Basecamp 5 launched in 2026 with 100+ improvements including new calendar interface, Markdown support, voice notes, AI-ready API, and CLI tools for agent integration.",
+          "published_date": "2026-05-26",
+          "claim_id": "c2"
+        },
+        "marketing_task": {
+          "description": "Develop customer case studies and before-and-after narratives. Basecamp consistently publishes testimonials and use-case examples across their site showing workflow transformation stories.",
+          "why_ai_helps": "AI can accelerate interview synthesis, narrative structuring, and case study template generation—reducing time-to-publish while maintaining the personal, human-centered storytelling that defines their marketing voice.",
+          "evidence_type": "product_surface",
+          "claim_id": "c3"
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "Basecamp is a cloud-based project management and team collaboration platform that organizes tasks, internal communication, and file sharing to help remote and onsite teams work together.",
+            "source_url": "https://www.softwareadvice.com/project-management/basecamp-profile/",
+            "source_title": "Basecamp Software Overview 2026 - Features & Pricing",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c2",
+            "statement": "Basecamp 5 launched in May 2026 with well over 100 significant improvements including a refreshed API, CLI, Skills for AI agents, full-screen calendars, Markdown support, voice notes, and tables in messages.",
+            "source_url": "https://world.hey.com/dhh/basecamp-five-8fcfd2ef",
+            "source_title": "Basecamp Five",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c3",
+            "statement": "Basecamp's marketing emphasizes customer testimonials and before-and-after stories showing workflow transformation, with over 1,000 customer testimonials published on their site.",
+            "source_url": "https://basecamp.com/before-and-after",
+            "source_title": "Basecamp — Before & After",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c4",
+            "statement": "Basecamp has approximately 176 employees as of June 30, 2026, and is headquartered in Chicago, Illinois.",
+            "source_url": "https://tracxn.com/d/companies/basecamp/__dXfmFTUXEE7eJxNS4sA1_sSMeflsBdcfO3x4YHRH--Y",
+            "source_title": "Basecamp - 2026 Company Profile, Team, Funding, Competitors & Financials - Tracxn",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          },
+          {
+            "claim_id": "c5",
+            "statement": "Basecamp's product features include message boards, task assignment, to-do list management, scheduling, document sharing, file storage, and integrated team chat.",
+            "source_url": "https://tracxn.com/d/companies/basecamp/__dXfmFTUXEE7eJxNS4sA1_sSMeflsBdcfO3x4YHRH--Y",
+            "source_title": "Basecamp - 2026 Company Profile, Team, Funding, Competitors & Financials - Tracxn",
+            "confidence": "high",
+            "retrieved_at": "2026-08-30"
+          }
+        ],
+        "gaps": [],
+        "run_meta": {
+          "agent": "researcher",
+          "model": "claude-haiku-4-5-20251001",
+          "attempt": 1,
+          "tool_calls": 5,
+          "latency_ms": 25504
+        }
+      },
+      "drafts": [
+        {
+          "draftable": true,
+          "email": {
+            "subject": "your 1,000 before-and-after stories",
+            "body": "Basecamp has published over 1,000 customer testimonials on its before-and-after page, each one a workflow-transformation story [c3]. That's a large library to keep growing while your team runs the day-to-day work of a project management platform used by small and mid-size teams and agencies [c1].\n\nBasecamp 5 shipped in May with an AI-ready API and CLI tools built for agent integration [c2]. Turning raw customer interviews into a published case study is repeatable work: structure, synthesis, editing, every single time [c3].\n\nSpeeding up that synthesis step means new stories move from interview to publish in days rather than sitting in a backlog, without flattening the personal voice that makes them convincing.\n\nWorth a 15-minute call to see if this fits your current pipeline?",
+            "word_count": 119
+          },
+          "account_brief": {
+            "who_they_are": "Basecamp is a cloud-based project management and collaboration platform for small and mid-size teams and agencies, bundling tasks, internal chat, and file sharing into one workspace [c1].",
+            "why_now": "Basecamp 5 launched in May 2026 with more than 100 improvements, including a refreshed API, CLI tools, and AI-agent-ready surfaces, signaling they are actively building for automation and integration rather than just shipping incremental features [c2].",
+            "the_wedge": "Basecamp runs an active before-and-after testimonial program with over 1,000 published customer stories, a core piece of their marketing voice [c3]. Producing these at volume requires constant interview synthesis, narrative structuring, and editing — work that likely sits with a small marketing team, given the company has roughly 176 employees total [c4]. Their product itself bundles messaging, task management, and file sharing, meaning the workflow they document for customers closely mirrors their own team's internal daily workflow [c5].",
+            "what_i_dont_know": [
+              "Who specifically owns case study production — marketing, founders, or customer success",
+              "Current publishing cadence and how much of a backlog exists",
+              "Whether they've already experimented with AI tools internally, given their AI-agent-ready push",
+              "Budget or team size dedicated specifically to marketing content, versus the 176 companywide headcount"
+            ],
+            "opening_question": "How are you currently turning customer interviews into published case studies, and where does that process bottleneck?",
+            "word_count": 201
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "account_brief"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 1,
+            "revision_of": null,
+            "latency_ms": 56224
+          }
+        },
+        {
+          "draftable": true,
+          "email": {
+            "subject": "your 1,000 before-and-after stories",
+            "body": "Basecamp has published over 1,000 customer testimonials on its before-and-after page, each one a workflow-transformation story [c3]. That's a lot of narrative work to keep producing while running a project management platform built for small and mid-size teams and agencies [c1].\n\nBasecamp 5 shipped in May with an AI-ready API and CLI tools for agent integration [c2]. Turning raw customer interviews into a published case study is repeatable: structure, synthesis, editing, every time [c3].\n\nSpeeding up that synthesis step means new stories move from interview to publish in days instead of sitting in a backlog, without flattening the personal voice that makes them convincing.\n\nWorth a 15-minute call to see if this fits your pipeline?",
+            "word_count": 115
+          },
+          "account_brief": {
+            "who_they_are": "Basecamp is a cloud-based project management and collaboration platform for small and mid-size teams and agencies, bundling tasks, internal chat, and file sharing into one workspace [c1].",
+            "why_now": "Basecamp 5 launched in May 2026 with more than 100 improvements, including a refreshed API, CLI tools, and AI-agent-ready surfaces, signaling they are actively building for automation and integration rather than just shipping incremental features [c2].",
+            "the_wedge": "Basecamp runs an active before-and-after testimonial program with over 1,000 published customer stories, a core piece of their marketing voice [c3]. Producing these at volume requires constant interview synthesis, narrative structuring, and editing — work that likely sits with a small marketing team, given the company has roughly 176 employees total [c4]. Their product itself bundles messaging, task management, and file sharing, meaning the workflow they document for customers closely mirrors their own team's internal daily workflow [c5].",
+            "what_i_dont_know": [
+              "Who specifically owns case study production — marketing, founders, or customer success",
+              "Current publishing cadence and how much of a backlog exists",
+              "Whether they've already experimented with AI tools internally, given their AI-agent-ready push",
+              "Budget or team size dedicated specifically to marketing content, versus the 176 companywide headcount"
+            ],
+            "opening_question": "How are you currently turning customer interviews into published case studies, and where does that process bottleneck?",
+            "word_count": 201
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "account_brief"
+            },
+            {
+              "claim_id": "c5",
+              "used_in": "account_brief"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 2,
+            "revision_of": "attempt-1",
+            "latency_ms": 18304
+          }
+        },
+        {
+          "draftable": true,
+          "email": {
+            "subject": "your 1,000+ customer testimonials",
+            "body": "Basecamp has published over 1,000 customer testimonials on its site, with before-and-after stories as a recurring format for showing workflow transformation [c3]. That marketing runs alongside a project management platform built for small and mid-size teams and agencies [c1].\n\nBasecamp 5 shipped in May with an AI-ready API and CLI tools for agent integration [c2]. Turning a raw customer interview into a published case study is repeatable work: structure, synthesis, editing, done again for every new story [c3].\n\nWe build tools that turn interview transcripts into structured case study drafts, cutting the editing step down without flattening the personal voice that makes these stories convincing.\n\nIs that worth a 15-minute call to see how it'd fit your current process?",
+            "word_count": 115
+          },
+          "account_brief": {
+            "who_they_are": "Basecamp is a cloud-based project management and collaboration platform for small and mid-size teams and agencies, bundling tasks, internal chat, and file sharing into one workspace [c1].",
+            "why_now": "Basecamp 5 launched in May 2026 with more than 100 improvements, including a refreshed API, CLI tools, and AI-agent-ready surfaces, signaling they are actively building for automation and integration rather than just shipping incremental features [c2].",
+            "the_wedge": "Basecamp publishes over 1,000 customer testimonials on its site, with before-and-after stories a recurring format for showing workflow transformation — a core piece of their marketing voice [c3]. Producing these at volume requires constant interview synthesis, narrative structuring, and editing, work that likely sits with a small marketing team given the company has roughly 176 employees total [c4].",
+            "what_i_dont_know": [
+              "Who specifically owns case study production — marketing, founders, or customer success",
+              "Current publishing cadence and how much of a backlog exists",
+              "Whether they've already experimented with AI tools internally, given their AI-agent-ready push",
+              "Budget or team size dedicated specifically to marketing content, versus the 176 companywide headcount",
+              "Whether their own internal workflow — task management, messaging, file sharing — mirrors what they document in customer case studies"
+            ],
+            "opening_question": "How are you currently turning customer interviews into published case studies, and where does that process bottleneck?",
+            "word_count": 202
+          },
+          "claim_refs": [
+            {
+              "claim_id": "c1",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c2",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c3",
+              "used_in": "both"
+            },
+            {
+              "claim_id": "c4",
+              "used_in": "account_brief"
+            }
+          ],
+          "run_meta": {
+            "agent": "drafter",
+            "model": "claude-sonnet-5",
+            "attempt": 3,
+            "revision_of": "attempt-2",
+            "latency_ms": 64903
+          }
+        }
+      ],
+      "verdicts": [
+        {
+          "score": 4,
+          "flags": [
+            {
+              "type": "constraint",
+              "severity": "blocking",
+              "location": "word_count_selfreport: model claimed 119, actual 123",
+              "remediation": "Fix: word_count_selfreport: model claimed 119, actual 123"
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "",
+            "still_coherent": false
+          }
+        },
+        {
+          "score": 3,
+          "pass": false,
+          "flags": [
+            {
+              "type": "claim_drift",
+              "severity": "blocking",
+              "location": "Basecamp has published over 1,000 customer testimonials on its before-and-after page, each one a workflow-transformation story [c3].",
+              "remediation": "c3 states 'over 1,000 customer testimonials published on their site' — not on the before-and-after page specifically, and it does not assert that every testimonial is a before-and-after workflow-transformation story. Restate to match the claim: the 1,000+ count applies site-wide, and the before-and-after stories are a subset/format. Do not universalize with 'each one.' The subject line 'your 1,000 before-and-after stories' inherits and amplifies this same misattribution and must be rewritten alongside it (e.g. 'your 1,000+ customer testimonials')."
+            },
+            {
+              "type": "compliance",
+              "severity": "major",
+              "location": "new stories move from interview to publish in days instead of sitting in a backlog",
+              "remediation": "Two problems in one clause. 'In days' is a specific delivery-time outcome no claim in the brief authorizes. 'Instead of sitting in a backlog' presupposes a backlog that the account brief's own 'what I don't know' explicitly admits is unknown ('Current publishing cadence and how much of a backlog exists'). Remove the timeframe promise and reframe the backlog as a question rather than a stated condition."
+            },
+            {
+              "type": "tone",
+              "severity": "major",
+              "location": "Worth a 15-minute call to see if this fits your pipeline?",
+              "remediation": "The ask is single and clear, but 'this' has no antecedent — the email never states what the sender actually does or offers. The reader gets an observation about their testimonial volume and a gesture at 'speeding up that synthesis step' with no named capability. Add one concrete clause identifying the offer before the ask. Related: paragraphs three and four survive redaction of every company-specific detail intact, which means half the body is carrying no account-specific weight."
+            },
+            {
+              "type": "claim_drift",
+              "severity": "minor",
+              "location": "Their product itself bundles messaging, task management, and file sharing, meaning the workflow they document for customers closely mirrors their own team's internal daily workflow [c5].",
+              "remediation": "c5 lists product features only. It supports nothing about how Basecamp's own team works internally. The inference is marked with 'meaning' and lives in the internal brief rather than the email, so it is not blocking, but either drop it or move it into 'what I don't know' as an open question. No additional deduction taken for this flag."
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "[COMPANY] has published over [N] customer testimonials on its [PRODUCT_PAGE], each one a workflow-transformation story. That's a lot of narrative work to keep producing while running a [PRODUCT] platform built for [SEGMENT].\n\n[PRODUCT] shipped in [MONTH] with an [FEATURE] and [FEATURE] for agent integration. Turning raw customer interviews into a published case study is repeatable: structure, synthesis, editing, every time.\n\nSpeeding up that synthesis step means new stories move from interview to publish in days instead of sitting in a backlog, without flattening the personal voice that makes them convincing.\n\nWorth a 15-minute call to see if this fits your pipeline?",
+            "still_coherent": false
+          },
+          "notes": "Swap test passes, but narrowly and unevenly. The first two paragraphs collapse without their specifics — remove the testimonial volume and the Basecamp 5 API/CLI detail and there is no reason this email was sent to this company. The last two paragraphs survive redaction untouched and read as reusable boilerplate. That is not a template failure by the letter of the check, but the drafter should know that 45% of the body is doing no account-specific work.\n\nConstraint layer is clean: body 115 words (within 120 +/- 10), account brief 201 (within 200-300), subject 32 characters, one ask, 'what I don't know' present with four substantive entries, no banned phrases detected. No evidence of a hole in the upstream pre-check.\n\nThe opener is strong and earns no penalty — it leads with a number and a specific artifact rather than warming up. That makes the c3 misattribution more costly, not less: the single most load-bearing sentence in the email is the one that distorts its source, and the subject line repeats the distortion. This is attempt 2; the retry should be narrow. Fix the c3 attribution in both subject and first sentence, strip the 'in days' promise and the presupposed backlog, and name the offer once. Everything else in the package is sound and should not be rewritten.\n\nCalibration: this is a fail on a genuinely competent draft, which is the expected shape of a strict gate. Flagging for the human that the drafter is producing well-structured work and drifting only at the point of highest compression — the hook — which suggests the drafter prompt may be rewarding punchiness over fidelity when restating a claim.",
+          "run_meta": {
+            "latency_ms": 100863,
+            "model": "claude-opus-5",
+            "agent": "qa-reviewer",
+            "attempt": 2
+          }
+        },
+        {
+          "score": 4,
+          "flags": [
+            {
+              "type": "constraint",
+              "severity": "blocking",
+              "location": "word_count_selfreport: model claimed 115, actual 119",
+              "remediation": "Fix: word_count_selfreport: model claimed 115, actual 119"
+            }
+          ],
+          "swap_test": {
+            "redacted_body": "",
+            "still_coherent": false
+          }
+        }
+      ],
+      "not_captured": [],
       "not_captured_reason": null
     }
   ]

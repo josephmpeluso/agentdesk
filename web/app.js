@@ -54,6 +54,59 @@
     return d.innerHTML;
   }
 
+  // Same as esc(), but wraps [cN] claim-reference tokens in a styled span —
+  // used only for email body text, where those refs are meaningful markers
+  // back to the researcher's claims, not incidental brackets.
+  function escBody(str) {
+    return esc(str).replace(/\[c\d+\]/g, function (m) {
+      return '<span class="ref">' + m + "</span>";
+    });
+  }
+
+  function renderDraftContent(draft) {
+    if (!draft) return "";
+    var html = "";
+    var email = draft.email || {};
+    html += '<div class="email-subject"><span class="k">Subject</span>' + esc(email.subject) + "</div>";
+    html += '<div class="email-body">' + escBody(email.body) + "</div>";
+    var ab = draft.account_brief;
+    if (ab) {
+      if (ab.who_they_are) html += '<div class="account-brief-row"><b>Who they are</b> ' + esc(ab.who_they_are) + "</div>";
+      if (ab.why_now) html += '<div class="account-brief-row"><b>Why now</b> ' + esc(ab.why_now) + "</div>";
+      if (ab.the_wedge) html += '<div class="account-brief-row"><b>The wedge</b> ' + esc(ab.the_wedge) + "</div>";
+      if (ab.opening_question) html += '<div class="account-brief-row"><b>Opening question</b> ' + esc(ab.opening_question) + "</div>";
+      if (ab.what_i_dont_know && ab.what_i_dont_know.length) {
+        html += '<div class="account-brief-row"><b>What I don’t know</b></div><ul class="dont-know-list">';
+        ab.what_i_dont_know.forEach(function (t) { html += "<li>" + esc(t) + "</li>"; });
+        html += "</ul>";
+      }
+    }
+    return html;
+  }
+
+  function renderVerdictContent(verdict) {
+    if (!verdict) return "";
+    var html = "";
+    var passed = verdict.score != null && verdict.score >= 8 && !(verdict.flags || []).some(function (f) { return f.severity === "blocking"; });
+    html += '<div class="qa-score-row ' + (passed ? "pass" : "fail") + '"><b>' + esc(verdict.score) + "</b><span>/ 10 (threshold 8)</span></div>";
+    (verdict.flags || []).forEach(function (f) {
+      html += '<div class="qa-flag sev-' + esc(f.severity) + '">' +
+        '<div class="qa-flag-top"><span class="qa-flag-type">' + esc(f.type) + '</span>' +
+        '<span class="qa-flag-sev">' + esc(f.severity) + "</span></div>" +
+        (f.location ? '<div class="qa-flag-loc">“' + esc(f.location) + '”</div>' : "") +
+        (f.remediation ? '<div class="qa-flag-fix">' + esc(f.remediation) + "</div>" : "") +
+        "</div>";
+    });
+    if (verdict.swap_test) {
+      html += '<div class="swap-test-row"><b>Swap test:</b> still coherent after redaction — ' +
+        esc(verdict.swap_test.still_coherent ? "true (reads as a template)" : "false (specifics are load-bearing)") + "</div>";
+    }
+    if (verdict.notes) {
+      html += '<div class="qa-notes"><span class="k">Reviewer notes</span>' + esc(verdict.notes) + "</div>";
+    }
+    return html;
+  }
+
   /* ----------------------------------------------------------
      group a run's flat gate list into: researcher gates, then
      an ordered list of "attempts" (drafter+QA loop iterations).
@@ -179,8 +232,10 @@
     return html;
   }
 
-  function renderAttempts(grouped) {
+  function renderAttempts(grouped, run) {
     if (!grouped.attempts.length) return "";
+    var drafts = run.drafts || [];
+    var verdicts = run.verdicts || [];
     var html = '<div class="card"><h3>Attempt history</h3><div class="attempts">';
     grouped.attempts.forEach(function (a, idx) {
       html += '<div class="attempt"><div class="attempt-head">' +
@@ -194,7 +249,16 @@
           (g.detail ? '<span class="gate-detail">— ' + esc(g.detail) + "</span>" : "") +
           "</div>";
       });
-      html += "</div></div>";
+      html += "</div>";
+      if (drafts[idx]) {
+        html += '<div class="attempt-content"><div class="attempt-content-head">Draft</div>' +
+          renderDraftContent(drafts[idx]) + "</div>";
+      }
+      if (verdicts[idx]) {
+        html += '<div class="attempt-content"><div class="attempt-content-head">QA verdict</div>' +
+          renderVerdictContent(verdicts[idx]) + "</div>";
+      }
+      html += "</div>";
     });
     html += "</div></div>";
     return html;
@@ -222,6 +286,20 @@
           '<div class="claim-source">source: <a href="' + esc(c.source_url) + '" target="_blank" rel="noopener">' + esc(c.source_url) + "</a></div></div>";
       });
       html += "</div>";
+      // Generic fallback for any researcher schema failure not already
+      // explained by a hand-annotated marketing_task.rejected_reason —
+      // covers real runs whose failing field wasn't marketing_task at all.
+      var alreadyExplained = b.marketing_task && b.marketing_task.rejected_reason;
+      if (!alreadyExplained) {
+        var failedGate = null;
+        (run.gates || []).forEach(function (g) {
+          if (!failedGate && g.gate === "schema:research_brief" && !g.passed) failedGate = g;
+        });
+        if (failedGate) {
+          html += '<div class="flagged-field"><div class="label">Why this run stopped here</div>' +
+            '<div class="why">' + esc(failedGate.detail) + "</div></div>";
+        }
+      }
     } else {
       html += notCapturedBlock(run, "researcher");
     }
@@ -231,14 +309,32 @@
 
   function renderDraftPanel(run) {
     var html = '<div class="card"><div class="panel-head"><h3>Drafter</h3></div>';
-    html += notCapturedBlock(run, "draft");
+    var drafts = run.drafts || [];
+    if (drafts.length) {
+      if (drafts.length > 1) {
+        html += '<div class="attempt-tag-final">Showing the final attempt (#' + drafts.length +
+          " of " + drafts.length + ") — see Attempt History above for every revision.</div>";
+      }
+      html += renderDraftContent(drafts[drafts.length - 1]);
+    } else {
+      html += notCapturedBlock(run, "draft");
+    }
     html += "</div>";
     return html;
   }
 
   function renderQaPanel(run) {
     var html = '<div class="card"><div class="panel-head"><h3>QA Reviewer</h3></div>';
-    html += notCapturedBlock(run, "verdict");
+    var verdicts = run.verdicts || [];
+    if (verdicts.length) {
+      if (verdicts.length > 1) {
+        html += '<div class="attempt-tag-final">Showing the final verdict (#' + verdicts.length +
+          " of " + verdicts.length + ") — see Attempt History above for every revision.</div>";
+      }
+      html += renderVerdictContent(verdicts[verdicts.length - 1]);
+    } else {
+      html += notCapturedBlock(run, "verdict");
+    }
     html += "</div>";
     return html;
   }
@@ -311,7 +407,7 @@
       '<span class="legend-item"><span class="shape model" style="background:var(--accent);"></span>model judgment</span></div></div>' +
       renderPipeline(grouped, run) + "</div>";
 
-    html += renderAttempts(grouped);
+    html += renderAttempts(grouped, run);
 
     html += '<div class="panels">' + renderResearcherPanel(run) + renderDraftPanel(run) + renderQaPanel(run) + "</div>";
 

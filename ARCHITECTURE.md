@@ -240,34 +240,52 @@ Listing these because a system diagram without them is marketing.
   measures whether gates fire on known failure shapes. It does not measure
   reply rate, and nothing in this repo does.
 - **The researcher overran its own declared field-length limits, live — fixed
-  in the source, not yet proven live.** Across the 13 live runs against
-  Sonos, 12 were `REJECTED` at the researcher's schema gate; a full audit of
-  every gate detail (not just the two most visible shapes) found 7 of those
-  12 were exactly two defects: a field over its character cap (4 runs, across
-  `marketing_task.description`, `marketing_task.why_ai_helps`, and
-  `what_they_sell.summary` — not only `description`, as earlier text here
-  claimed) and a non-conforming `claim_id` like `c1b` (3 runs). Root cause:
-  `skills/researcher/SKILL.md` told the model to count *characters* before
-  emitting a field — something a model does unreliably, since it doesn't see
-  individual characters the way it sees words — instead of giving it a word
-  budget with real margin under the character cap, and never stated the
-  `claim_id` pattern with valid/invalid examples at all. Fixed: the skill now
-  gives explicit word ceilings (with margin) instead of a character-counting
-  instruction, explicit `claim_id` examples, and closes two more gaps the
-  same audit found — `evidence_type`'s enum was never named in the prompt,
-  and neither was the required date format — both of which the schema
-  requires but nothing told the model. `research_brief_precheck()` in
-  `orchestrator/run.py` also now catches all of these before schema
-  validation runs, with a message that names the field and the actual number
-  instead of a jsonschema dump truncated mid-string. Golden-set cases
-  `rb01`–`rb04` guard against a regression. **What this doesn't claim:** the
-  fix is unverified against a real model — no live run has happened since it
-  shipped. The remaining 5 of 12 historical rejections were three separate
-  things this fix doesn't touch: 3 were output-budget truncations at the
-  drafter/QA stage (already fixed in an earlier pass, before this run set),
-  1 was a citation-markup leak (reinforced guidance, not a new fix), and 1
-  was a single run missing a required field entirely (a one-off, not a
-  pattern).
+  in the source, and now confirmed live for the two defects it targeted.**
+  Of the original 13 live runs against Sonos, 12 were `REJECTED` at the
+  researcher's schema gate; a full audit of every gate detail (not just the
+  two most visible shapes) found 7 of those 12 were exactly two defects: a
+  field over its character cap (4 runs, across `marketing_task.description`,
+  `marketing_task.why_ai_helps`, and `what_they_sell.summary` — not only
+  `description`, as earlier text here claimed) and a non-conforming
+  `claim_id` like `c1b` (3 runs). Root cause: `skills/researcher/SKILL.md`
+  told the model to count *characters* before emitting a field — something a
+  model does unreliably, since it doesn't see individual characters the way
+  it sees words — instead of giving it a word budget with real margin under
+  the character cap, and never stated the `claim_id` pattern with
+  valid/invalid examples at all. Fixed: the skill now gives explicit word
+  ceilings (with margin) instead of a character-counting instruction,
+  explicit `claim_id` examples, and closes two more gaps the same audit
+  found — `evidence_type`'s enum and the required date format were never
+  named in the prompt. `research_brief_precheck()` in `orchestrator/run.py`
+  also now catches all of these before schema validation runs, with a
+  message that names the field and the actual number instead of a
+  jsonschema dump truncated mid-string. Golden-set cases `rb01`–`rb04` guard
+  against a regression. **Five fresh live runs against five different
+  companies confirmed it: zero length or `claim_id`-format violations across
+  any of them.** The remaining 5 of the original 12 historical rejections
+  were three separate things this fix doesn't touch: 3 were output-budget
+  truncations at the drafter/QA stage (already fixed in an earlier pass,
+  before this run set), 1 was a citation-markup leak, and 1 was a single run
+  missing a required field entirely (a one-off, not a pattern). The
+  citation-markup leak is its own bullet below — it was *not* actually
+  fixed by the reinforcement in place at the time, and live testing proved
+  that too.
+- **The researcher's web-search tool leaks citation markup into plain-text
+  fields, and reinforcement alone didn't fix it.** `call_agent()` already
+  told the researcher, in two places, never to copy citation markup (e.g.
+  `<cite index=...>...</cite>`) out of search results into a JSON string
+  value — that guidance existed before this session and was reinforced
+  further as part of the schema audit above. It recurred anyway, in 2 of 5
+  fresh live runs (Figma, Linear against `what_they_sell`/`recent_news`),
+  and directly caused a field-length violation as a side effect — the
+  markup itself ate the character budget. `research_brief_precheck()`
+  correctly rejects it (it's just a length overrun from the precheck's
+  point of view), but nothing in the pipeline detects the *markup itself*
+  as the specific problem, so the error message doesn't point at the real
+  cause. A more reliable fix — stripping known citation-markup patterns
+  from search results before they ever reach the model's context, rather
+  than asking the model not to copy them — is the honest next step, not
+  written yet.
 - **The gate log records only the first schema-validation error per run, not
   every error.** A deliberate, correct choice for the pipeline itself — one
   loud, findable failure beats a wall of secondary errors nobody reads before
@@ -280,7 +298,9 @@ Listing these because a system diagram without them is marketing.
   scenarios' live runs are unrun — not skipped by choice, but because the
   Anthropic account funding this project's live testing ran out of credit.
   See `README.md` → "What live testing found" and `STATE.md`.
-- **No live run has ever produced `RELEASED` or `HALTED`.** Of 13 real API
-  calls against Sonos, 12 were rejected at the researcher's schema gate and 1
-  escalated. `RELEASED` and `HALTED` are demonstrated only via dry-run
-  fixtures — real code paths, not live evidence.
+- **No live run has ever produced `HALTED`.** Of 18 real API runs across 5
+  companies, none triggered `insufficient_evidence` — every company had
+  enough public surface to clear the bar. `HALTED` is demonstrated only via
+  the `thin_evidence` dry-run fixture — a real code path, not live evidence.
+  `RELEASED` **has** happened live: a Notion run cleared the bar at 8/10
+  after two revisions — see `README.md` → "What live testing found."

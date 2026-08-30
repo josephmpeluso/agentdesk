@@ -22,8 +22,9 @@ runs it live.
 **To see real evidence instead of reading claims about it:** open
 [`web/index.html`](web/index.html) locally, or visit
 [agentdesk-4f6.pages.dev](https://agentdesk-4f6.pages.dev) — a static audit
-viewer over 13 real API runs against Sonos, including the run this project
-is proudest of. (Moving to `agentdesk.joeypeluso.com`; see `DEPLOY.md`.)
+viewer over 18 real API runs across 5 companies (Sonos, Notion, Figma,
+Linear, Basecamp), including the first live `RELEASED` this project ever
+produced. (Moving to `agentdesk.joeypeluso.com`; see `DEPLOY.md`.)
 
 ---
 
@@ -209,7 +210,7 @@ python orchestrator/test_jsonio.py                               # 6/6 — the J
 ```
 
 Open `web/index.html` directly in a browser (double-click it — no server, no
-build step) to see the audit trail behind the "13 real API runs" claims
+build step) to see the audit trail behind the "18 real API runs" claims
 throughout this document. On Windows, `.\setup.ps1` runs everything above as
 one pass and tells you if anything's broken.
 
@@ -278,17 +279,29 @@ citation-markup leak, and one run missing a required field outright. The gate
 worked correctly every time — this was the researcher's own `SKILL.md` under-
 specifying two of its own schema's constraints, not a gate failure.
 
-**That's fixed now, in the source — not yet proven live.** The prompt told
-the model to count *characters* before emitting a field, which a model does
-unreliably; it now gives an explicit word budget with real margin instead,
-plus explicit `claim_id` examples and two more gaps the same audit surfaced
-(`evidence_type`'s enum and the required date format were never stated at
-all). A new `research_brief_precheck()` also catches all of these before raw
-schema validation runs, with a message that names the field and the actual
-number instead of a jsonschema dump truncated mid-string. Golden-set cases
-`rb01`–`rb04` guard against a regression. No live run has happened since —
-the honest next step is running a few fresh ones and seeing whether the fix
-holds against a real model, not declaring it fixed from the fixtures alone.
+**That's fixed in the source, and now proven live — partially.** The prompt
+told the model to count *characters* before emitting a field, which a model
+does unreliably; it now gives an explicit word budget with real margin
+instead, plus explicit `claim_id` examples and two more gaps the same audit
+surfaced (`evidence_type`'s enum and the required date format were never
+stated at all). A new `research_brief_precheck()` also catches all of these
+before raw schema validation runs, with a message that names the field and
+the actual number instead of a jsonschema dump truncated mid-string.
+Golden-set cases `rb01`–`rb04` guard against a regression.
+
+Five fresh live runs, against five different companies (Sonos, Notion,
+Figma, Linear, Basecamp), confirm the fix for the two defects it targeted:
+**zero** field-length or `claim_id`-format violations across any of them.
+But live testing found something the fixture-only fix couldn't: **the
+citation-markup leak is not actually fixed, just reinforced, and it recurred
+in 2 of the 5 fresh runs** (Figma, Linear) — `<cite index="...">` tags
+copied straight out of the search tool's results into `what_they_sell` and
+`recent_news`, inflating those fields past their 300-character cap as a
+direct side effect. The gate caught both correctly and rejected without
+retry, exactly as designed. That's the honest state of it: two defects
+fixed and confirmed live, one long-standing defect confirmed *not* fixed by
+reinforcement alone, discovered by the very testing that was supposed to
+validate the other two.
 
 **One run is worth reading in full.** A live run against Sonos went researcher
 → drafter → QA cleanly, and the QA reviewer (Opus) caught a real `claim_drift`
@@ -309,8 +322,26 @@ in advance which run turns out to be the one worth showing.
 **Then the account ran out of credit**, mid-way through what would have been
 the furthest-reaching live run yet. Two planned phases — running all four
 scenarios live, and measuring the QA reviewer against the four eval cases
-only a model can catch — are unmeasured as a result, not because they were
+only a model can catch — were unmeasured as a result, not because they were
 skipped by choice.
+
+**Credit came back, and so did live testing — this time against five
+different companies, not just Sonos.** The point wasn't just to prove the
+researcher fix; it was to see what a healthier pipeline actually produces,
+instead of a stage-one failure loop. It produced a real mix:
+
+| Company | Outcome | Attempts | Score | What happened |
+|---|---|---|---|---|
+| Sonos | `ESCALATED` | 3 | 6/10 | Researcher clean. QA blocked on `unsupported_claim`, then `claim_drift`, then `unsupported_claim` again. Retry budget spent, correctly escalated. |
+| **Notion** | **`RELEASED`** | 3 | 8/10 | Researcher clean. Two revisions to clear `claim_drift` and generic-language flags, then cleared the bar. **The first live `RELEASED` this project has ever produced.** |
+| Figma | `REJECTED` | 0 | — | Citation-markup leak (see above) inflated two fields past their character cap. Correctly rejected before drafting. |
+| Linear | `REJECTED` | 0 | — | Same defect, same shape, different company — confirms it's a pattern, not a fluke. |
+| Basecamp | `ESCALATED` | 3 | 4/10 | Researcher clean. The *drafter's* self-reported word count was wrong twice (a pre-existing, documented behavior — see "The limits are suggestions" above), plus one `claim_drift` QA block. Retry budget spent. |
+
+No `HALTED` in this batch — every company researched had enough public
+surface to clear the evidence bar. That's not a claim that halting doesn't
+work; the `thin_evidence` dry-run fixture still demonstrates it, and it just
+didn't come up against five real, well-documented companies.
 
 ---
 
@@ -322,7 +353,7 @@ contracts/         JSON schemas for every handoff
 orchestrator/      run.py — gates, retry budget, run logging, dry-run fixtures
 orchestration/     importable n8n workflow (16 nodes, generated + graph-checked)
 evals/             mutation-based golden set, scorer, and results
-web/               static audit viewer over the 13 live runs — open index.html
+web/               static audit viewer over 18 live runs across 5 companies — open index.html
 verticals/         device fleet triage — the same architecture, specced not built
 ops/               runbook: metrics, cost model, failure playbooks
 ARCHITECTURE.md    why each gate exists, and what this system can't do
@@ -389,12 +420,12 @@ instead of a matter of trust.
   without one ran the account dry.
 - **The four live-scenario runs and four QA-judgment eval cases are
   unmeasured.** See "What live testing found" above.
-- **No live run has ever reached `RELEASED` or `HALTED`.** Of the 13 real API
-  calls against Sonos, 12 were rejected at the researcher's schema gate and 1
-  escalated after two revisions — that's the full outcome distribution. Those
-  two terminal states are demonstrated only by the `happy_path`/`generic_email`/
-  `wordcount_violation` and `thin_evidence` dry-run fixtures, which are real
-  code paths but not live evidence that a real model, live, produces them.
+- **No live run has ever reached `HALTED`.** Of 18 real API runs, none have
+  triggered `insufficient_evidence` — every company researched (Sonos, Notion,
+  Figma, Linear, Basecamp) had enough public surface to clear the evidence
+  bar. `HALTED` is demonstrated only by the `thin_evidence` dry-run fixture —
+  a real code path, but not live evidence that a real model, live, produces
+  it. `RELEASED` **has** now happened live: Notion, 3 attempts, score 8/10.
 
 ---
 

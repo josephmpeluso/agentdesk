@@ -105,9 +105,38 @@ being too strict) cover the fix; `evals/run_eval.py` now branches on a
 `"stage"` field per case so researcher-stage cases test
 `research_brief_precheck()` directly instead of the drafter's
 `deterministic_checks()`. All five dry-run scenarios and the offline eval
-still pass (now 14/18 recall, 0/5 false blocks — was 10/14, 0/4). **Not done:
-no live run has happened against the fix.** The next live batch is what
-actually tests it against a real model, not the fixtures.
+still pass (now 14/18 recall, 0/5 false blocks — was 10/14, 0/4).
+
+## New this session: 5 fresh live runs, first live RELEASED
+
+Budget approved up to $4; used on 5 live runs against 5 real companies
+(Sonos, Notion, Figma, Linear, Basecamp) — the point being not just to
+prove the researcher fix, but to see the pipeline produce something other
+than a stage-one failure loop. Outcome mix: `ESCALATED` (Sonos, 3 attempts,
+score 6), **`RELEASED`** (Notion, 3 attempts, score 8 — the first live
+`RELEASED` this project has ever produced), `REJECTED` (Figma), `REJECTED`
+(Linear), `ESCALATED` (Basecamp, 3 attempts, score 4). No `HALTED` — every
+company had enough public surface to clear the evidence bar.
+
+The fix from above is confirmed for what it targeted: zero field-length or
+`claim_id`-format violations across any of the 5 runs. It also surfaced
+something the fix didn't touch: **the citation-markup leak recurred in 2 of
+5 runs** (Figma, Linear) — `<cite index=...>` tags copied straight into
+`what_they_sell`/`recent_news`, which is what actually blew the character
+cap in both cases. The existing guidance (in `call_agent()`, reinforced
+further this session) evidently isn't sufficient; a real fix would strip
+known citation-markup patterns from search results before they reach the
+model, not just ask it not to copy them. Not done yet — new known
+limitation, documented in `ARCHITECTURE.md`.
+
+Dashboard (`web/data/build_runs_json.py`, `web/app.js`) updated to use these
+5 runs' real `brief`/`drafts`/`verdicts` fields directly — no hand-recovery
+needed, unlike the original 13. This also meant building actual draft/QA
+verdict rendering in `app.js` for the first time; previously `renderDraftPanel`
+and `renderQaPanel` unconditionally showed "not captured" because no run's
+data ever supported anything else. 18 total runs now on the dashboard.
+README/ARCHITECTURE updated with the real outcome mix and the corrected
+RELEASED/HALTED claims.
 
 ## A real observability gap, stated plainly
 
@@ -126,15 +155,15 @@ went.
 
 ## Not verified live — proven only via dry-run fixtures, or not proven at all
 
-- **`RELEASED` has never happened on a live run.** Of 13 live runs: 10
-  rejected at the researcher's schema gate, 2 more rejected the same way
-  with fuller detail captured, 1 escalated. Zero released. The `RELEASED`
-  terminal state is only demonstrated via the `happy_path`, `generic_email`,
-  and `wordcount_violation` dry-run fixtures — real code paths, but not live
-  evidence.
-- **`HALTED` has never happened on a live run either.** Only the
-  `thin_evidence` fixture demonstrates it. No live research call ever
-  produced `insufficient_evidence: true` for Sonos.
+- **`RELEASED` has now happened on a live run** — Notion, 3 attempts, score
+  8/10, part of the 5-run batch documented above. Historically, of the
+  original 13 runs against Sonos: 9 rejected at the researcher's schema
+  gate (2 with fuller detail captured), 3 rejected at a drafter/QA
+  truncation, 1 escalated, zero released. Combined with the 5 new runs: 18
+  total, 1 released.
+- **`HALTED` has still never happened on a live run.** Only the
+  `thin_evidence` fixture demonstrates it. No live research call, across 18
+  real runs and 5 companies, ever produced `insufficient_evidence: true`.
 - **The live QA-judgment eval (`run_eval.py --live`, cases b11–b14) has never
   been run.** The offline number (14/18, 0/5 false blocks) is the only
   honest figure available. A single ad-hoc test call against case b12 during
@@ -167,7 +196,10 @@ where to resume.
 
 ## What's still broken or unverified, listed plainly
 
-- No live `RELEASED` or `HALTED` run exists.
+- No live `HALTED` run exists. `RELEASED` now does (Notion, this session).
+- The citation-markup leak recurred live (2 of 5 fresh runs) despite
+  existing reinforcement. Not actually fixed — see the new known-limitation
+  bullet in `ARCHITECTURE.md`.
 - The live QA-judgment number is permanently a hypothesis until someone runs
   it with credit.
 - `785069cb`'s underlying content (claims, draft text, flag detail) is gone —

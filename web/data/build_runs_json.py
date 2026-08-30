@@ -7,14 +7,22 @@ source of truth for gates/scores/tokens/outcome. Transcribing it by hand risks
 a typo that makes the dashboard say something the log doesn't. Run this, don't
 edit web/data/runs.json directly.
 
-What's NOT here, and why: draft text and QA flag detail were never printed to
-any surviving log for ANY live run — the audit-detail printer (print_audit in
-orchestrator/run.py) was added mid-session, after most live runs had already
-happened. Two runs (65de63f2, 0f8a2da1) got researcher-panel detail because
-they ran after that printer existed but were rejected before reaching the
-drafter. The escalated run (785069cb) — the best run this system ever
-produced — ran before the printer existed, so only its gate sequence survives.
-That gap is real. The dashboard shows it as "not captured," not as empty.
+Two eras of data live in the same file, and this script treats them
+differently:
+
+- The original 13 runs (all against Sonos) mostly predate run persistence —
+  draft text and QA flag detail were never printed to any surviving log for
+  those, because the audit-detail printer (print_audit in orchestrator/run.py)
+  was added mid-session, after most of them had already happened. Two runs
+  (65de63f2, 0f8a2da1) got researcher-panel detail because they ran after that
+  printer existed but were rejected before reaching the drafter. The escalated
+  run (785069cb) — the best run this system produced in that batch — ran
+  before the printer existed, so only its gate sequence survives. That gap is
+  real; the dashboard shows it as "not captured," not as empty.
+- Every run after the "guarantee run persistence" fix carries its own real
+  `brief` / `drafts` / `verdicts` fields directly in runs.jsonl — full
+  researcher claims, every draft attempt, every QA verdict with flags and
+  notes. This script uses that data as-is, with no hand-recovery needed.
 """
 import json
 from pathlib import Path
@@ -128,9 +136,18 @@ def main() -> None:
     runs = []
     for r in live_rows:
         run_id = r["run_id"]
-        researcher = RESEARCHER_BY_RUN_ID.get(run_id)
+        # Runs made after the "guarantee run persistence" fix carry their own
+        # real brief/drafts/verdicts in runs.jsonl — use those directly.
+        # Older runs (the original 13) mostly don't; fall back to the two
+        # hand-recovered researcher snippets, or the not-captured framing.
+        researcher = r.get("brief") or RESEARCHER_BY_RUN_ID.get(run_id)
+        drafts = r.get("drafts") or []
+        verdicts = r.get("verdicts") or []
 
-        if run_id in NOT_CAPTURED_BY_RUN_ID:
+        if drafts or verdicts:
+            not_captured = []
+            not_captured_reason = None
+        elif run_id in NOT_CAPTURED_BY_RUN_ID:
             not_captured = NOT_CAPTURED_BY_RUN_ID[run_id]
             not_captured_reason = NOT_CAPTURED_REASON_785069CB
         elif researcher is not None:
@@ -152,14 +169,16 @@ def main() -> None:
             "started_at": r.get("started_at"),
             "gates": r.get("gates", []),
             "researcher": researcher,
-            "draft": None,
-            "verdict": None,
+            "drafts": drafts,
+            "verdicts": verdicts,
             "not_captured": not_captured,
             "not_captured_reason": not_captured_reason,
         })
 
+    companies = sorted(set(r["company"] for r in runs))
     out = {
-        "source": "13 live API runs against Sonos, from orchestrator/run.py, logged to runs.jsonl. "
+        "source": f"{len(runs)} live API runs across {len(companies)} companies "
+                   f"({', '.join(companies)}), from orchestrator/run.py, logged to runs.jsonl. "
                    "No fixture/dry-run data is included in this file.",
         "models": MODELS,
         "default_run_id": "785069cb",
@@ -170,7 +189,7 @@ def main() -> None:
     OUT_JS.write_text("window.RUNS_DATA = " + payload + ";\n", encoding="utf-8")
     print(f"wrote {OUT_JSON} and {OUT_JS} — {len(runs)} live runs")
     for r in runs:
-        print(f"  {r['run_id']}  {r['outcome']:10s}  researcher={'yes' if r['researcher'] else 'no'}")
+        print(f"  {r['run_id']}  {r['company']:12s} {r['outcome']:10s}  researcher={'yes' if r['researcher'] else 'no'}  drafts={len(r['drafts'])}  verdicts={len(r['verdicts'])}")
 
 
 if __name__ == "__main__":

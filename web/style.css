@@ -757,6 +757,68 @@ code, .mono { font-family: var(--font-mono); }
 .flagged-field .text { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; margin-bottom: 6px; }
 .flagged-field .why { font-size: 12px; color: var(--ink-muted); font-style: italic; }
 
+/* -- draft / verdict content (real runs only, see run.drafts / run.verdicts) -- */
+
+.attempt-tag { font-size: 12px; color: var(--ink-muted); }
+
+.email-subject {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.email-subject .k { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin-bottom: 2px; }
+
+.email-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  margin-bottom: 10px;
+}
+.email-body .ref { font-family: var(--font-mono); font-size: 11.5px; font-weight: 700; color: var(--accent); }
+
+.account-brief-row { font-size: 12.5px; color: var(--ink-muted); margin-bottom: 6px; line-height: 1.5; }
+.account-brief-row b { color: var(--ink-2); font-weight: 600; }
+
+.dont-know-list { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; color: var(--ink-2); line-height: 1.6; }
+
+.attempt-tag-final { font-size: 11px; color: var(--ink-faint); font-style: italic; margin-bottom: 10px; }
+
+.qa-score-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; font-size: 13px; }
+.qa-score-row b { font-size: 20px; font-family: var(--font-mono); }
+.qa-score-row.pass b { color: var(--released); }
+.qa-score-row.fail b { color: var(--rejected); }
+
+.qa-flag {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--surface-2);
+}
+.qa-flag:last-child { margin-bottom: 0; }
+.qa-flag.sev-blocking { border-left-color: var(--rejected); }
+.qa-flag.sev-major { border-left-color: var(--escalated); }
+.qa-flag.sev-minor { border-left-color: var(--not-reached); }
+.qa-flag-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.qa-flag-type { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-2); }
+.qa-flag-sev { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; padding: 1px 6px; border-radius: 4px; background: var(--surface-3); color: var(--ink-muted); }
+.qa-flag-loc { font-size: 12.5px; color: var(--ink-2); font-style: italic; margin-bottom: 3px; }
+.qa-flag-fix { font-size: 12px; color: var(--ink-muted); line-height: 1.5; }
+
+.swap-test-row { font-size: 12.5px; color: var(--ink-muted); margin: 10px 0; padding: 8px 10px; background: var(--surface-2); border-radius: var(--radius-sm); }
+.swap-test-row b { color: var(--ink-2); }
+
+.qa-notes { font-size: 12.5px; color: var(--ink-2); line-height: 1.55; white-space: pre-wrap; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
+.qa-notes .k { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin-bottom: 4px; }
+
+.attempt-content { padding: 12px 14px; border-top: 1px solid var(--border); }
+.attempt-content-head { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); margin-bottom: 8px; }
+
 /* -- not captured state -- */
 
 .not-captured {
