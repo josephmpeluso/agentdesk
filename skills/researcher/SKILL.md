@@ -22,10 +22,17 @@ it will be rejected by the orchestrator before a human sees it.
    `source_url` that you actually retrieved during this run. A URL you
    remember, reconstructed, or guessed is a fabrication. If you cannot fetch
    it, you cannot cite it. `source_url` must be a plain string starting with
-   `http://` or `https://` — never copy citation markup (e.g.
-   `<cite index=...>...</cite>`, footnote brackets, markdown link syntax)
-   from search results into this field or any other string value in the
-   brief. Write plain prose; put the URL nowhere else.
+   `http://` or `https://` — put the URL nowhere else.
+   **Every field value in this brief is plain text. No markup, no tags of
+   any kind — not HTML, not XML, not the search tool's own citation
+   annotations (e.g. `<cite index="5-6,5-7">...</cite>`), not footnote
+   brackets, not markdown link syntax. This applies to every string field,
+   not just `source_url`** — a citation tag copied into `what_they_sell`,
+   `recent_news`, or a claim's `statement` is exactly as wrong as one copied
+   into `source_url`, and the orchestrator will strip it either way, but a
+   stripped field is evidence the search tool's raw output leaked through
+   unedited. Read what you're about to write, in full, before emitting it,
+   and remove anything that isn't your own prose.
 3. **Exactly three findings.** One `what_they_sell`, one `recent_news`, one
    `marketing_task`. Not two, not five. Depth over breadth — the drafter can
    only use so much.

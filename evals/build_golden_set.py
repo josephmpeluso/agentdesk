@@ -337,7 +337,95 @@ research_case("rg01", "good", None, "none", lambda b: None,
               "precheck itself being too strict.")
 
 
+# ------------------------------------------- citation-markup sanitization
+# Distinct bug from rb01-rb04 above: that was the model misjudging its own
+# field length. This is search-tool output (citation markup) contaminating
+# model output — found live in 2 of 5 fresh Sonos/Notion/Figma/Linear/Basecamp
+# runs (Figma, Linear). sanitize_research_brief() strips it before any check
+# runs; these cases prove the strip actually fires and that a brief which
+# only *looks* bad because of markup is not wrongly rejected once it does.
+
+_MARKUP_CLEAN_DESC = (
+    "Ridgeline publishes technical release notes for every product update, pairs each "
+    "one with a short video walkthrough, and maintains a public changelog that "
+    "engineering references before each sprint planning session and before each "
+    "customer webinar, though the writing itself is handled entirely by two rotating "
+    "on-call engineers each release cycle without a dedicated technical writer."
+)
+
+
+def _markup_over_cap(b):
+    part1, part2 = _MARKUP_CLEAN_DESC.split(", though the writing")
+    part1 += ","
+    part2 = "though the writing" + part2
+    b["marketing_task"]["description"] = (
+        '<cite index="5-6,5-7,5-8,5-9,5-10">' + part1 + "</cite> "
+        '<cite index="3-1,6-1,9-2,9-3,9-4">' + part2 + "</cite>"
+    )
+
+
+research_case("rs01", "good", None, "none", _markup_over_cap,
+              "Citation markup pushes marketing_task.description to 467 chars — over the "
+              "400-char cap — but the clean text underneath is 384 chars, comfortably "
+              "under. Must be stripped and pass, not rejected. Real shape: this is what "
+              "the Figma and Linear live rejections looked like.")
+
+
+def _markup_in_claim_statement(b):
+    b["claims"][0]["statement"] = '<cite index="1-1">' + b["claims"][0]["statement"] + "</cite>"
+
+
+research_case("rs02", "good", None, "none", _markup_in_claim_statement,
+              "Citation markup in claims[0].statement, a field with no length cap — "
+              "would never be rejected either way, but must still be stripped. Proves "
+              "sanitization covers every string field, not just the capped ones.")
+
+
+def _markup_under_cap(b):
+    clean = ("Ridgeline announced a new distribution partnership covering the western "
+             "region in July 2026, expanding retail availability for its flagship "
+             "product line.")
+    b["recent_news"]["summary"] = '<cite index="2-1,2-2">' + clean + "</cite>"
+
+
+research_case("rs03", "good", None, "none", _markup_under_cap,
+              "Citation markup present (182 chars) but recent_news.summary stays well "
+              "under its 300-char cap even without stripping. Must still be stripped — "
+              "the point isn't that this one would have failed, it's that sanitization "
+              "isn't conditional on whether the field happens to be near its limit.")
+
+
 if __name__ == "__main__":
+    # Self-check the three sanitization cases directly against the real
+    # function, not just via the eval harness — concrete proof the strip
+    # actually fires, independent of whether the precheck would have caught
+    # the unstripped version anyway.
+    from run import sanitize_research_brief, research_brief_precheck  # noqa: E402
+
+    rs01 = next(c for c in CASES if c["id"] == "rs01")["brief"]
+    marked_desc = rs01["marketing_task"]["description"]
+    assert len(marked_desc) > 400, f"rs01 marked description is only {len(marked_desc)} chars, needs to exceed 400"
+    clean01, hits01 = sanitize_research_brief(rs01)
+    assert "marketing_task.description" in hits01, "rs01: sanitize didn't fire on marketing_task.description"
+    assert "<cite" not in clean01["marketing_task"]["description"] and "cite index" not in clean01["marketing_task"]["description"], \
+        "rs01: markup survived sanitization"
+    assert len(clean01["marketing_task"]["description"]) <= 400, \
+        f"rs01: still over cap after stripping ({len(clean01['marketing_task']['description'])} chars) — case doesn't prove what it claims"
+    ok01, problems01 = research_brief_precheck(clean01)
+    assert ok01, f"rs01: precheck still fails after sanitize: {problems01}"
+
+    rs02 = next(c for c in CASES if c["id"] == "rs02")["brief"]
+    clean02, hits02 = sanitize_research_brief(rs02)
+    assert "claims[0].statement" in hits02, "rs02: sanitize didn't fire on claims[0].statement"
+    assert "cite index" not in clean02["claims"][0]["statement"], "rs02: markup survived sanitization"
+
+    rs03 = next(c for c in CASES if c["id"] == "rs03")["brief"]
+    marked_news = rs03["recent_news"]["summary"]
+    assert len(marked_news) <= 300, f"rs03 is supposed to stay under cap even with markup, but it's {len(marked_news)} chars"
+    clean03, hits03 = sanitize_research_brief(rs03)
+    assert "recent_news.summary" in hits03, "rs03: sanitize didn't fire even though markup is present"
+    assert "cite index" not in clean03["recent_news"]["summary"], "rs03: markup survived sanitization"
+
     out = Path(__file__).parent / "golden_set.jsonl"
     with out.open("w", encoding="utf-8") as fh:
         for c in CASES:
@@ -348,3 +436,5 @@ if __name__ == "__main__":
     by_model = sum(1 for c in CASES if c["caught_by"] == "model")
     print(f"wrote {out}")
     print(f"  {len(CASES)} cases: {good} clean, {by_code} code-catchable, {by_model} model-only")
+    print("  sanitization self-checks passed: rs01 (over-cap-via-markup), "
+          "rs02 (claim statement), rs03 (under-cap-with-markup)")

@@ -88,14 +88,16 @@
       an agent's own output broke its contract: a field over its length limit, a
       malformed id, an unparseable reply. The gate correctly refused to pass it on, but
       the correct next step isn't "nothing to see here" — it's fixing the agent that
-      produced it. Of the 12 REJECTED runs below: 7 were the researcher's own schema
-      violations (field-length overruns, malformed claim ids) — the researcher's prompt
-      under-specified those constraints relative to its own schema, and that's since
-      been fixed in the source. 3 were an output-budget truncation at the drafter or QA
-      stage, already fixed in an earlier pass (before this run set). The remaining 2
-      were a citation-markup leak and one structurally malformed reply — the first has
-      reinforced guidance now, the second was a one-off. These runs predate all of that
-      and are left as-is, not backfilled or hidden.
+      produced it. Of the 14 REJECTED runs below: 7 were the researcher's schema
+      under-specification (field-length overruns, malformed claim ids) — fixed in the
+      source, and confirmed live afterward with zero recurrences across 5 fresh runs.
+      3 were citation markup leaking from the search tool into brief fields (1 original,
+      plus 2 more that same live-testing batch found) — also fixed in the source since,
+      a stripping step this time rather than just a prompt reminder, but verified only
+      on fixtures so far, not yet proven live. 3 were an output-budget truncation at the
+      drafter or QA stage, already fixed in an earlier pass before any of this. The
+      remaining 1 was a single structurally malformed reply, a one-off. These runs
+      predate all of that and are left as-is, not backfilled or hidden.
     </div>
 
     <p class="intro-eval">

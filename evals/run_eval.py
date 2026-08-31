@@ -29,7 +29,7 @@ sys.path.insert(0, str(ROOT / "orchestrator"))
 
 from run import (  # noqa: E402
     deterministic_checks, release_decision, research_brief_precheck,
-    MODELS, load_skill, MAX_TOKENS,
+    sanitize_research_brief, MODELS, load_skill, MAX_TOKENS,
 )
 from jsonio import extract_json  # noqa: E402
 
@@ -58,12 +58,14 @@ def evaluate(cases: list[dict], live: bool) -> dict:
     for c in cases:
         stage = c.get("stage", "drafter")
         if stage == "researcher":
-            # A researcher-stage case tests research_brief_precheck (Gate 2's
-            # field-level precheck) directly, not the drafter's deterministic
-            # checks — there's no draft to speak of at this stage, and no
-            # QA-reviewer path either: these are pure schema/format defects,
-            # not judgment calls.
-            code_ok, problems = research_brief_precheck(c["brief"])
+            # A researcher-stage case tests the same path run_pipeline()
+            # actually runs: sanitize first (strips tool-leaked citation
+            # markup), then research_brief_precheck (Gate 2's field-level
+            # precheck) on the sanitized result — there's no draft to speak
+            # of at this stage, and no QA-reviewer path either: these are
+            # pure schema/format defects, not judgment calls.
+            sanitized, _ = sanitize_research_brief(c["brief"])
+            code_ok, problems = research_brief_precheck(sanitized)
         else:
             code_ok, problems = deterministic_checks(c["brief"], c["draft"])
         blocked_by = None

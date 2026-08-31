@@ -64,9 +64,14 @@ MODELS = {
 # was raised to 8000 last session and held up against a synthetic test case,
 # but a real verdict — with several flags and the full email reproduced in
 # swap_test.redacted_body — ran the ceiling out again on a live run, so it's
-# raised further here with more headroom.
+# raised further here with more headroom. researcher raised to match: it
+# hadn't hit this specific bug in the 18 live runs to date, but it runs on
+# the same Claude 5 family and was carrying the exact vulnerable value (4000)
+# this comment already describes failing at — Crux hit the identical bug in
+# its own debater budgets independently, which is what prompted checking
+# this one rather than waiting for a live run to prove it too.
 MAX_TOKENS = {
-    "researcher": 4000,
+    "researcher": 16000,
     "drafter": 16000,
     "qa-reviewer": 16000,
 }
@@ -190,10 +195,12 @@ def call_agent(agent: str, user_content: str, record: RunRecord, attempt: int = 
     if agent == "researcher":
         system_prompt += (
             "\n\n## Search tool note\n\nCite sources only via `source_url`, a plain string "
-            "starting with `http://` or `https://`. Never copy citation markup (e.g. "
-            "`<cite index=...>...</cite>`), footnote brackets, or markdown link syntax from "
-            "search results into `source_url` or any other JSON string value — write plain "
-            "prose there.\n\n"
+            "starting with `http://` or `https://`. Every field in this brief is plain text — "
+            "no markup, no tags, ever. Search results sometimes carry citation annotations "
+            "like `<cite index=\"5-6,5-7\">...</cite>` — never copy those into any field, "
+            "`source_url` or otherwise. Same for footnote brackets and markdown link syntax. "
+            "Write plain prose. Before you emit a field, check it doesn't still have a tag "
+            "fragment sitting in it from whatever you read.\n\n"
             "Every string field with a maxLength has a *word* ceiling stated in the skill "
             "above that leaves real margin under the character cap — use that word count, "
             "not the character count. Counting words is something you do reliably; counting "
@@ -261,6 +268,51 @@ EVIDENCE_TYPES = {
     "job_posting", "content_cadence", "product_surface",
     "support_channel", "public_statement", "site_structure",
 }
+
+# Matches only the <cite ...> / </cite> tags the web_search tool sometimes
+# leaves in its results, e.g. <cite index="5-6,5-7">...</cite>. Deliberately
+# narrow: it strips this one known tag by name, not "anything in angle
+# brackets" — a company name like "<Company>" or a real comparison operator
+# in prose must survive untouched. The tagged text itself is never removed,
+# only the wrapper.
+CITATION_MARKUP_RE = re.compile(r"</?cite\b[^>]*>", re.IGNORECASE)
+
+
+def sanitize_research_brief(brief: dict) -> tuple[dict, list[str]]:
+    """Strips citation markup the search tool leaks into plain-text fields,
+    before any length check or schema validation ever sees them.
+
+    This is a distinct bug from the schema under-specification fixed
+    earlier: that one was the model misjudging its own field length. This
+    one is tool output contaminating model output — the underlying claim
+    text is correct, only the <cite> wrapper around it is wrong. Rejecting
+    a correct claim over stray tags would waste a whole research call on
+    something a few characters of regex already fixes, so this sanitizes
+    rather than rejects. Every field in the brief is in scope, not just the
+    length-capped ones — a citation tag in claims[].statement is just as
+    much tool contamination as one in marketing_task.description, even
+    though that field has no cap to breach.
+
+    Returns the sanitized brief (a new object; the input is never mutated)
+    and the list of field paths where a strip actually fired, so the caller
+    can log it — a silent strip is exactly the kind of thing this project's
+    own invariants exist to prevent.
+    """
+    fired: list[str] = []
+
+    def clean(obj, path):
+        if isinstance(obj, dict):
+            return {k: clean(v, f"{path}.{k}" if path else k) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [clean(v, f"{path}[{i}]") for i, v in enumerate(obj)]
+        if isinstance(obj, str):
+            stripped = CITATION_MARKUP_RE.sub("", obj)
+            if stripped != obj:
+                fired.append(path)
+            return stripped
+        return obj
+
+    return clean(brief, ""), fired
 
 
 def research_brief_precheck(brief: dict) -> tuple[bool, list[str]]:
@@ -498,6 +550,14 @@ def run_pipeline(company: str, domain: str | None, fixtures: dict | None, record
         "Produce the research_brief.",
         "research_brief",
     )
+
+    # Sanitize before anything else touches the brief — a length check or
+    # schema validation run on unsanitized text would reject correct content
+    # over the search tool's own markup, not the researcher's own mistake.
+    brief, sanitize_hits = sanitize_research_brief(brief)
+    if sanitize_hits:
+        print(f"  [INFO] stripped citation markup from {len(sanitize_hits)} field(s): {', '.join(sanitize_hits)}")
+
     record.brief = brief
 
     # Precheck first: same gate ("schema:research_brief"), a clearer message

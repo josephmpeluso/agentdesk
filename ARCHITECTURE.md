@@ -270,22 +270,57 @@ Listing these because a system diagram without them is marketing.
   citation-markup leak is its own bullet below — it was *not* actually
   fixed by the reinforcement in place at the time, and live testing proved
   that too.
-- **The researcher's web-search tool leaks citation markup into plain-text
-  fields, and reinforcement alone didn't fix it.** `call_agent()` already
+- **The researcher's web-search tool leaked citation markup into plain-text
+  fields — fixed 2026-08-30, verified on fixtures, not yet confirmed live.**
+  Prompt-side reinforcement alone hadn't been enough: `call_agent()` already
   told the researcher, in two places, never to copy citation markup (e.g.
-  `<cite index=...>...</cite>`) out of search results into a JSON string
-  value — that guidance existed before this session and was reinforced
-  further as part of the schema audit above. It recurred anyway, in 2 of 5
-  fresh live runs (Figma, Linear against `what_they_sell`/`recent_news`),
-  and directly caused a field-length violation as a side effect — the
-  markup itself ate the character budget. `research_brief_precheck()`
-  correctly rejects it (it's just a length overrun from the precheck's
-  point of view), but nothing in the pipeline detects the *markup itself*
-  as the specific problem, so the error message doesn't point at the real
-  cause. A more reliable fix — stripping known citation-markup patterns
-  from search results before they ever reach the model's context, rather
-  than asking the model not to copy them — is the honest next step, not
-  written yet.
+  `<cite index="5-6,5-7">...</cite>`) out of search results into a JSON
+  string value, and it recurred anyway, in 2 of 5 live runs (Figma, Linear
+  against `what_they_sell`/`recent_news`), directly causing a field-length
+  violation as a side effect — the markup itself ate the character budget.
+  This is a distinct bug from the schema under-specification above: that one
+  was the model misjudging its own length; this one is tool output
+  contaminating model output. The fix is belt-and-braces, because neither
+  half alone was sufficient: `sanitize_research_brief()` in
+  `orchestrator/run.py` strips `<cite>`/`</cite>` tags from every string
+  field in the brief — content preserved, only the wrapper removed — before
+  any length check or schema validation runs, and logs every field it
+  touches so a strip stays visible rather than silent; `SKILL.md` and the
+  injected prompt reinforcement were also strengthened to state plainly that
+  every field is plain text, no markup of any kind. Golden-set cases
+  `rs01`–`rs03` cover it: markup that pushes a field over its cap (and must
+  now pass once stripped), markup in an uncapped field (must still be
+  stripped even though it was never going to be rejected), and markup that
+  never threatened the cap at all (stripped anyway — the strip isn't
+  conditional on need). **What this doesn't claim:** no live run has
+  exercised the fix yet. Re-running sanitize against the actual Figma/Linear
+  brief data confirmed the markup itself is now fully removed in both — but
+  also surfaced something the fix doesn't touch: even with markup stripped,
+  the underlying clean prose in both was *still* over its cap (Figma:
+  311/300, Linear: 354/300). The markup leak was a real, now-fixed
+  contributing cause, not the sole cause, for those two specific historical
+  rejections — the 40-word budgets for `what_they_sell.summary` and
+  `recent_news.summary`, judged to have comfortable margin when only
+  `marketing_task` fields were tightened, evidently don't have enough margin
+  in practice either. Not fixed here; noted, not silently absorbed into this
+  bullet's success story.
+- **Two distinct bug classes have now recurred independently across both
+  AgentDesk and [Crux](https://github.com/josephmpeluso/crux), written weeks
+  apart.** The denylist-leak bullet above already names one (banned-phrase
+  list here, phantom-opponent phrase check in Crux, both caught leaking on a
+  paraphrase neither list anticipated). The `max_tokens`-too-low-for-extended-
+  thinking bug is the second: it hit AgentDesk's drafter first, got fixed,
+  then Crux hit the identical failure shape in its own debater budgets on
+  its very first live run, in a codebase that never shared code with
+  AgentDesk's fix. AgentDesk's own `researcher` budget was still sitting at
+  the original vulnerable value (4000) when this was checked — raised to
+  16000 to match, not because it had failed live yet, but because "hasn't
+  failed yet" isn't the same claim as "isn't vulnerable." Two bugs, two
+  independent recurrences, and both are the *general* kind — a denylist
+  missing a phrasing, a fixed budget too small for a model that thinks
+  before it answers — not something specific to either project's domain.
+  That's worth taking as a signal about which failure modes generalize
+  across a codebase versus which ones are one-offs, not as a coincidence.
 - **The gate log records only the first schema-validation error per run, not
   every error.** A deliberate, correct choice for the pipeline itself — one
   loud, findable failure beats a wall of secondary errors nobody reads before

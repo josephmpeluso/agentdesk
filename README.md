@@ -293,15 +293,28 @@ Five fresh live runs, against five different companies (Sonos, Notion,
 Figma, Linear, Basecamp), confirm the fix for the two defects it targeted:
 **zero** field-length or `claim_id`-format violations across any of them.
 But live testing found something the fixture-only fix couldn't: **the
-citation-markup leak is not actually fixed, just reinforced, and it recurred
-in 2 of the 5 fresh runs** (Figma, Linear) — `<cite index="...">` tags
-copied straight out of the search tool's results into `what_they_sell` and
-`recent_news`, inflating those fields past their 300-character cap as a
-direct side effect. The gate caught both correctly and rejected without
-retry, exactly as designed. That's the honest state of it: two defects
-fixed and confirmed live, one long-standing defect confirmed *not* fixed by
-reinforcement alone, discovered by the very testing that was supposed to
-validate the other two.
+citation-markup leak was not actually fixed by reinforcement alone, and it
+recurred in 2 of the 5 fresh runs** (Figma, Linear) — `<cite
+index="...">...</cite>` tags copied straight out of the search tool's
+results into `what_they_sell` and `recent_news`, inflating those fields
+past their 300-character cap as a direct side effect. The gate caught both
+correctly and rejected without retry, exactly as designed.
+
+**That's fixed now too (2026-08-30), verified on fixtures, not yet
+confirmed live.** Belt-and-braces, because reinforcement alone had already
+proven insufficient: `sanitize_research_brief()` strips citation markup
+from every string field in the brief — before any length check or schema
+validation runs, content preserved, only the tag removed, every strip
+logged — and `SKILL.md` was strengthened to state plainly that every field
+is plain text, no markup of any kind. Golden-set cases `rs01`-`rs03` cover
+it. Re-running the sanitizer against the actual Figma and Linear brief data
+confirmed the markup is now fully removed from both — but also found the
+underlying clean prose in both was still over its cap even without the
+markup (Figma 311/300, Linear 354/300). The leak was a real contributing
+cause, not the sole one, for those two specific rejections; the 40-word
+budgets for `what_they_sell.summary`/`recent_news.summary` evidently don't
+have as much margin as judged when only `marketing_task` was tightened.
+Not fixed here — see `ARCHITECTURE.md` → Known limitations.
 
 **One run is worth reading in full.** A live run against Sonos went researcher
 → drafter → QA cleanly, and the QA reviewer (Opus) caught a real `claim_drift`
