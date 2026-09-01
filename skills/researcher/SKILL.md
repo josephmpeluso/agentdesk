@@ -53,8 +53,16 @@ it will be rejected by the orchestrator before a human sees it.
    a model — you don't see individual characters the way you see words, and
    guessing at character counts is how a field quietly blows past its cap
    while looking fine. Word counts are the estimate you can actually trust.
-   - `what_they_sell.summary` ≤ 40 words (schema cap: 300 characters)
-   - `recent_news.summary` ≤ 40 words (schema cap: 300 characters)
+   - `what_they_sell.summary` ≤ 27 words (schema cap: 300 characters). Was
+     40 words until measured against real output: technical product
+     descriptions run about 7.8 characters per word on average, worse (up to
+     8.6) when the summary gets denser. 40 words at that ratio is 300+
+     characters before you've written a word over budget — the old number
+     was never actually consistent with the cap it was supposed to respect.
+   - `recent_news.summary` ≤ 33 words (schema cap: 300 characters). Same
+     issue, smaller gap — news summaries measured lighter (about 6.7-7.2
+     characters per word) but the old 40-word budget still left too little
+     margin.
    - `marketing_task.description` ≤ 35 words (schema cap: 400 characters).
      This is the field most likely to run over — it's the one you're told to
      spend the most effort on, so it's the one that grows. Write it, count

@@ -12,9 +12,9 @@ keeps that gate switched on for a week, and then the system has no gate at all.
 
 ## The golden set
 
-23 cases: 5 clean, 18 bad. Every case is one named mutation applied to a
+28 cases: 9 clean, 19 bad. Every case is one named mutation applied to a
 single known-good baseline, so each isolates exactly one failure mode.
-Hand-writing 18 bad emails produces 18 subtly different emails and no clean
+Hand-writing 19 bad emails produces 19 subtly different emails and no clean
 attribution when one gets through.
 
 Each case declares who *should* catch it:
@@ -23,8 +23,9 @@ Each case declares who *should* catch it:
 - `model` — only the QA reviewer can catch it
 - `none` — intentionally clean; blocking it is a false positive
 
-Five cases (`rb01`–`rb04`, `rg01`) carry `"stage": "researcher"` and test
-`research_brief_precheck()` against a mutated *brief*, not a mutated draft —
+Ten cases (`rb01`–`rb05`, `rg01`–`rg02`, `rs01`–`rs03`) carry
+`"stage": "researcher"` and test `research_brief_precheck()` and
+`sanitize_research_brief()` against a mutated *brief*, not a mutated draft —
 see "Researcher-stage cases" below. Everything else tests the drafter/QA
 path via `deterministic_checks()`, unchanged.
 
@@ -35,9 +36,9 @@ Regenerate with `python build_golden_set.py`.
 `python run_eval.py` · runs in under a second · no API key
 
 ```
-recall             14/18   78%   (known-bad drafts blocked)
-false block rate    0/5     0%   (known-good drafts blocked)
-blocked by code    14
+recall             15/19   79%   (known-bad drafts blocked)
+false block rate    0/9     0%   (known-good drafts blocked)
+blocked by code    15
 blocked by model    0
 ```
 
@@ -66,8 +67,18 @@ blocked by model    0
 | rb03 | evidence_type not in the enum | code | **caught** |
 | rb04 | published_date not YYYY-MM-DD | code | **caught** |
 | rg01 | unmutated brief (guards the precheck against false positives) | — | passed |
+| rs01 | citation markup pushes description over its cap | code | **caught\*** |
+| rs02 | citation markup in an uncapped claim statement | — | passed\* |
+| rs03 | citation markup present, never threatens the cap | — | passed\* |
+| rb05 | what_they_sell.summary over cap on realistic prose, no markup | code | **caught** |
+| rg02 | both summaries at their new, tighter word budgets | — | passed |
 
-Fourteen of eighteen bad drafts and briefs blocked before spending a single
+\* `rs01`–`rs03` are "good" cases (label `good`, `caught_by: none`) — the
+markup is stripped by `sanitize_research_brief()` before the precheck ever
+runs, so the *correct* result is a pass. `rs01`'s pass is the interesting
+one: without sanitizing first, that brief would fail the length check.
+
+Fifteen of nineteen bad drafts and briefs blocked before spending a single
 model call, at zero false positives. That is the case for the deterministic
 layer: the cheapest gate catches most of the volume.
 
@@ -87,6 +98,28 @@ prompt; `rb01`/`rb02` are the regression guard so it can't quietly come back.
 `rb03` and `rb04` close two more gaps the same audit found: `evidence_type`'s
 six-value enum and the `YYYY-MM-DD` date format were never stated in the
 prompt at all, even though the schema requires both.
+
+`rs01`–`rs03` exist because that fix's own reinforcement wasn't enough: the
+search tool's citation markup (`<cite index="...">...</cite>`) leaked into
+brief fields in 2 of 5 fresh live runs, inflating them past their caps as a
+side effect. `sanitize_research_brief()` strips it — content preserved, tag
+removed, every strip logged — before any length check or schema validation
+runs. `rs01` proves a brief that would fail the length check unsanitized
+correctly passes once sanitized; `rs02`/`rs03` prove the strip fires on
+fields that were never going to be rejected either way, because it isn't
+conditional on need.
+
+`rb05`/`rg02` exist because sanitizing the real Figma/Linear briefs revealed
+a second, independent problem: even with markup removed, `what_they_sell
+.summary`'s clean text was *still* over its 300-char cap. Measured the
+actual characters-per-word ratio across the 7 real briefs this project has
+data for: 40 words at the mean observed density (7.78 c/w) is already 311
+characters. Budget tightened to 27 words (`recent_news.summary` to 33, same
+margin standard, though it wasn't independently broken). `rb05` proves the
+old budget was mathematically inconsistent with the cap on realistic prose
+alone; `rg02` proves the new budgets hold real margin even written close to
+their own limit. See `ARCHITECTURE.md` → Known limitations for the full
+measured table.
 
 ## What escaped, and why it matters
 
@@ -125,13 +158,14 @@ evidence.
 `python run_eval.py --live` adds real QA reviewer calls for every *drafter*-stage
 case that clears the deterministic gate — that's 8 calls, not 4: the 4 clean
 baselines (`g01`–`g04`) plus the 4 escapes (`b11`–`b14`), all of which pass
-`deterministic_checks()` and so all reach the reviewer. The 5 researcher-stage
-cases never call the model at all — `research_brief_precheck()` is pure code,
-by design, since these are schema/format defects, not judgment calls.
+`deterministic_checks()` and so all reach the reviewer. The 10 researcher-stage
+cases never call the model at all — `research_brief_precheck()` and
+`sanitize_research_brief()` are pure code, by design, since these are
+schema/format defects, not judgment calls.
 
 The number to watch is recall on b11–b14. If the reviewer catches all four,
 combined recall is 100% at 0% false blocks. If it catches two, the honest
-report is 16/18 — 89% — and the gap is where the next iteration goes.
+report is 17/19 — 89% — and the gap is where the next iteration goes.
 
 Run it before quoting a combined number. An unrun eval is a hypothesis.
 

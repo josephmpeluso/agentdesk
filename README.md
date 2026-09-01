@@ -146,28 +146,31 @@ restraint. Deletion works every time; restraint works most of the time, and
 
 ## Measured results
 
-`python evals/run_eval.py` — 23 cases, each one named mutation of a single
+`python evals/run_eval.py` — 28 cases, each one named mutation of a single
 known-good baseline, so every case isolates one failure mode.
 
 ```
-recall             14/18   78%   (known-bad drafts blocked)
-false block rate    0/5     0%   (known-good drafts blocked)
-blocked by code    14
+recall             15/19   79%   (known-bad drafts blocked)
+false block rate    0/9     0%   (known-good drafts blocked)
+blocked by code    15
 blocked by model    0
 ```
 
-**Fourteen of eighteen bad drafts and briefs blocked before spending a single
+**Fifteen of nineteen bad drafts and briefs blocked before spending a single
 model call, at zero false positives.** Review is the most expensive stage. On
-the 23-case golden set, 14 cases never reach a model at all — caught by code
+the 28-case golden set, 15 cases never reach a model at all — caught by code
 first.
 
-Five of those 23 cases (`rb01`–`rb04`, `rg01`) are new: they test the
-*researcher's* own output against `research_brief_precheck()`, not the
-drafter. They exist because 12 of the 13 live runs against Sonos were
-rejected at the researcher's schema gate — the gate worked, but the
+Ten of those 28 cases (`rb01`–`rb05`, `rg01`–`rg02`, `rs01`–`rs03`) are new
+since this project's original 18-case set: they test the *researcher's* own
+output against `research_brief_precheck()` and `sanitize_research_brief()`,
+not the drafter. They exist because 12 of the 13 live runs against Sonos
+were rejected at the researcher's schema gate — the gate worked, but the
 researcher's `SKILL.md` was under-specified relative to its own schema. See
 "What live testing found" below for the real story and the fix; `rb01`/`rb02`
-are the regression guard for the two defects that caused most of it.
+are the regression guard for the two defects that caused most of it, `rb05`
+for a third — a word budget mathematically inconsistent with its own
+schema cap, found by measurement, not by another live rejection.
 
 The four remaining escapes are the honest part:
 
@@ -186,7 +189,7 @@ The four remaining escapes are the honest part:
 `run_eval.py --live` would add real reviewer calls and measure whether the
 model catches those four. **It has not been run** — the account that funded
 this project's live testing ran out of credit first (see below). The number
-stated above is the honest one: 14/18 by code, 0/5 false blocks, and four
+stated above is the honest one: 15/19 by code, 0/9 false blocks, and four
 cases that need a model call this project hasn't paid for yet.
 
 ---
@@ -205,7 +208,7 @@ python orchestrator/run.py --dry-run --scenario generic_email   # RELEASED, afte
 python orchestrator/run.py --dry-run --scenario thin_evidence   # HALTED
 python orchestrator/run.py --dry-run --scenario wordcount_violation  # RELEASED, after 1 revision
 python orchestrator/run.py --dry-run --scenario escalation      # ESCALATED, retry budget exhausted
-python evals/run_eval.py                                        # 14/18 recall, 0/5 false blocks — reproduces "Measured results" above exactly
+python evals/run_eval.py                                        # 15/19 recall, 0/9 false blocks — reproduces "Measured results" above exactly
 python orchestrator/test_jsonio.py                               # 6/6 — the JSON-extraction parser tests
 ```
 
@@ -229,7 +232,7 @@ spend figure is replaced with the actual measured count it was standing in
 for. A repo whose thesis is "unsupported claims get blocked" should show
 that check on itself too.
 
-`run_eval.py --live` is the only thing standing between "14/18, 0/5 false
+`run_eval.py --live` is the only thing standing between "15/19, 0/9 false
 blocks" and a real measurement of whether the QA reviewer catches the four
 escapes. See "Measured results" above for why that number isn't in this
 document yet.
@@ -312,9 +315,25 @@ confirmed the markup is now fully removed from both — but also found the
 underlying clean prose in both was still over its cap even without the
 markup (Figma 311/300, Linear 354/300). The leak was a real contributing
 cause, not the sole one, for those two specific rejections; the 40-word
-budgets for `what_they_sell.summary`/`recent_news.summary` evidently don't
+budgets for `what_they_sell.summary`/`recent_news.summary` evidently didn't
 have as much margin as judged when only `marketing_task` was tightened.
-Not fixed here — see `ARCHITECTURE.md` → Known limitations.
+
+**That's fixed too (2026-09-01), verified on fixtures, not yet confirmed
+live.** Fixed with measurement instead of another guess: computed the
+actual characters-per-word ratio for every capped field across the 7 real
+`research_brief` summaries this project has (5 from the 2026-08-30 live
+batch, 2 hand-recovered — the other 11 of 18 live runs never persisted a
+brief). `what_they_sell.summary` was genuinely broken: 40 words at even the
+*mean* observed density (7.78 chars/word) is 311 characters, already over
+the 300 cap before the model writes a single word over budget. Tightened
+to 27 words. `recent_news.summary` wasn't independently broken (40 words at
+its worst observed density still fit, with thin margin) but was tightened
+to 33 words anyway, to the same ~21–23% margin standard the already-fixed
+`marketing_task` fields turned out to have once measured. Golden-set case
+`rb05` proves the old budget was really inconsistent with the cap on
+realistic prose alone, no markup involved; `rg02` proves the new budgets
+have real room even written close to their own limit. See
+`ARCHITECTURE.md` → Known limitations for the full numbers.
 
 **One run is worth reading in full.** A live run against Sonos went researcher
 → drafter → QA cleanly, and the QA reviewer (Opus) caught a real `claim_drift`

@@ -262,6 +262,29 @@ class ContractError(Exception):
     """Raised when an agent's output violates its contract."""
 
 
+# Word budgets in skills/researcher/SKILL.md exist to keep every
+# character-capped field in contracts/research_brief.schema.json under its
+# cap even if the model follows the word count closely — but "closely" only
+# works if the word budget and the char cap actually agree, given how many
+# characters real technical prose runs per word. Measured 2026-09-01 against
+# the 7 real research_brief summaries this project has (5 from the 2026-08-30
+# live batch, 2 hand-recovered from earlier terminal logs — the other 11 of
+# 18 live runs never persisted a brief). sanitized (citation-markup-stripped)
+# text only, so the ratio reflects actual prose, not tool contamination:
+#
+#   field                          cap   mean ratio   max ratio   word budget
+#   what_they_sell.summary         300   7.78 c/w     8.60 c/w    27  (was 40)
+#   recent_news.summary            300   6.73 c/w     7.17 c/w    33  (was 40)
+#   marketing_task.description     400   7.98 c/w     8.95 c/w    35  (unchanged)
+#   marketing_task.why_ai_helps    400   7.93 c/w     9.04 c/w    35  (unchanged)
+#
+# what_they_sell.summary was the real problem: 40 words at even the *mean*
+# observed ratio is 40 x 7.78 = 311 characters — already over the 300 cap
+# before the model writes a single word over budget. The other three fields'
+# existing budgets already had real margin once measured (~21-23% at worst
+# observed ratio); only what_they_sell.summary and recent_news.summary were
+# tightened, both to roughly the same ~21-23% margin the other two already
+# had, not to arbitrary round numbers.
 CLAIM_ID_RE = re.compile(r"^c[0-9]+$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 EVIDENCE_TYPES = {

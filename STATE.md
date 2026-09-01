@@ -44,7 +44,7 @@ claim below still matches what's actually committed, not what this file says.
   this session's runs, but `release_decision()` ran on every real QA verdict
   received and correctly blocked twice on `claim_drift`.
 - **The offline deterministic eval** (`python evals/run_eval.py`) — needs no
-  API key, ran clean: **14/18 recall, 0/5 false blocks.**
+  API key, ran clean: **15/19 recall, 0/9 false blocks.**
 - **All five dry-run scenarios** (`--dry-run --scenario {happy_path,
   generic_email, thin_evidence, wordcount_violation, escalation}`) still pass
   their expected terminal state after every code change made this session and
@@ -105,7 +105,7 @@ being too strict) cover the fix; `evals/run_eval.py` now branches on a
 `"stage"` field per case so researcher-stage cases test
 `research_brief_precheck()` directly instead of the drafter's
 `deterministic_checks()`. All five dry-run scenarios and the offline eval
-still pass (now 14/18 recall, 0/5 false blocks — was 10/14, 0/4).
+still pass (now 15/19 recall, 0/9 false blocks — was 10/14, 0/4).
 
 ## New this session: 5 fresh live runs, first live RELEASED
 
@@ -138,6 +138,61 @@ data ever supported anything else. 18 total runs now on the dashboard.
 README/ARCHITECTURE updated with the real outcome mix and the corrected
 RELEASED/HALTED claims.
 
+## New this session: sanitized citation markup instead of rejecting it
+
+Fixed the citation-markup leak found above. Distinct bug from the schema
+under-specification: that was the model misjudging its own length; this is
+tool output (the search tool's citation annotations) contaminating model
+output. Added `sanitize_research_brief()` in `orchestrator/run.py` — strips
+`<cite>`/`</cite>` tags from every string field in the brief, content
+preserved, before any length check or schema validation runs, every strip
+logged by field path. Sanitize rather than reject: the underlying claim is
+correct, only the wrapper is wrong. `SKILL.md` and the injected prompt
+reinforcement also state plainly that every field is plain text. Golden-set
+cases `rs01`–`rs03` cover it: over-cap-via-markup, markup-in-uncapped-field,
+markup-that-never-threatened-the-cap. 26 cases, 14/18 recall, 0/8 false
+blocks at that point.
+
+Re-running the sanitizer against the actual Figma/Linear brief data
+confirmed the markup is now fully stripped from both — but also found the
+underlying clean prose in both was *still* over its cap (Figma 311/300,
+Linear 354/300). The leak was a real contributing cause, not the sole one.
+Also checked AgentDesk's own `MAX_TOKENS` against Crux's (which Crux had
+just raised to 16000 after hitting the identical extended-thinking-eats-
+the-budget bug AgentDesk's drafter/QA already had): `researcher` was still
+at the original vulnerable value, 4000 — raised to 16000 to match, before
+it failed live rather than after. Fix verified on fixtures only; not yet
+proven live.
+
+## New this session: word budgets fixed with measurement, not guesswork
+
+Closed the loop on what the citation-markup fix surfaced: `what_they_sell
+.summary`/`recent_news.summary`'s 40-word budgets weren't consistent with
+their 300-char cap. Computed the actual characters-per-word ratio across
+the 7 real `research_brief` summaries this project has (5 from the
+2026-08-30 live batch, 2 hand-recovered — the other 11 of 18 live runs
+never persisted a brief). `what_they_sell.summary`: mean 7.78 c/w, max 8.60
+— 40 words at the *mean* ratio alone is 311 characters, already over the
+300 cap. `recent_news.summary`: mean 6.73, max 7.17 — not independently
+broken (40 words at worst observed ratio still fit, with thin 4.4% margin)
+but tightened anyway. `marketing_task.description`/`why_ai_helps` (already
+tightened to 35 words two sessions ago) checked against the same
+measurement and confirmed fine — ~21–23% margin at worst observed density,
+which turned out to be the number both newly-tightened fields were matched
+to, not an arbitrary round figure.
+
+New budgets: `what_they_sell.summary` 40 → 27 words, `recent_news.summary`
+40 → 33 words. Documented directly in `orchestrator/run.py` as a comment
+block with the measured table, not just in `SKILL.md` prose. The actual
+enforcement mechanism (`research_brief_precheck()`'s `check_len()`) already
+existed and needed no new code — this fix is entirely about making the
+*prompt's* word budget numerically honest about what it produces. Golden-set
+cases `rb05` (old budget genuinely breaches the cap on realistic prose,
+no markup) and `rg02` (new budgets hold real margin even written close to
+their own limit). 28 cases, 15/19 recall, 0/9 false blocks. Verified on
+fixtures only; the next live batch is what actually tests whether 27/33
+words changes what the model writes, not just what fits if it complies.
+
 ## A real observability gap, stated plainly
 
 The best run this project produced — `785069cb`, the escalation — happened
@@ -165,7 +220,7 @@ went.
   `thin_evidence` fixture demonstrates it. No live research call, across 18
   real runs and 5 companies, ever produced `insufficient_evidence: true`.
 - **The live QA-judgment eval (`run_eval.py --live`, cases b11–b14) has never
-  been run.** The offline number (14/18, 0/5 false blocks) is the only
+  been run.** The offline number (15/19, 0/9 false blocks) is the only
   honest figure available. A single ad-hoc test call against case b12 during
   debugging (not a full eval run) did get correctly blocked by Opus (score
   2, blocking `generic` flag) — suggestive, not a measurement, and not
@@ -190,7 +245,7 @@ Per this session's brief: running all four scenarios live, and running the
 four live QA-judgment eval cases, are **cancelled** — not "next up," not
 "blocked pending credit." The account that would fund them ran empty. The
 honest, final number for this project's quality gate is the offline one:
-**14/18 recall, 0/5 false blocks, by deterministic code alone.** If someone
+**15/19 recall, 0/9 false blocks, by deterministic code alone.** If someone
 picks this project back up with API credit, those two things are exactly
 where to resume.
 

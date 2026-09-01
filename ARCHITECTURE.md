@@ -301,9 +301,45 @@ Listing these because a system diagram without them is marketing.
   contributing cause, not the sole cause, for those two specific historical
   rejections — the 40-word budgets for `what_they_sell.summary` and
   `recent_news.summary`, judged to have comfortable margin when only
-  `marketing_task` fields were tightened, evidently don't have enough margin
-  in practice either. Not fixed here; noted, not silently absorbed into this
-  bullet's success story.
+  `marketing_task` fields were tightened, evidently didn't have enough
+  margin in practice either.
+- **The word-budget/char-cap mismatch above is fixed too (2026-09-01),
+  measured, not guessed, verified on fixtures only.** Computed the actual
+  characters-per-word ratio for every capped field across the 7 real
+  `research_brief` summaries this project has — 5 from the 2026-08-30 live
+  batch (Sonos, Notion, Figma, Linear, Basecamp), 2 hand-recovered from
+  earlier terminal logs; the other 11 of 18 live runs never persisted a
+  brief to measure. Sanitized text only, so the ratio reflects real prose,
+  not tool contamination:
+
+  | field | cap | mean c/w | max c/w | old budget | new budget |
+  |---|---|---|---|---|---|
+  | `what_they_sell.summary` | 300 | 7.78 | 8.60 | 40 | **27** |
+  | `recent_news.summary` | 300 | 6.73 | 7.17 | 40 | **33** |
+  | `marketing_task.description` | 400 | 7.98 | 8.95 | 35 | 35 (unchanged) |
+  | `marketing_task.why_ai_helps` | 400 | 7.93 | 9.04 | 35 | 35 (unchanged) |
+
+  `what_they_sell.summary` was genuinely broken: 40 words at even the
+  *mean* observed density is 311 characters — over the 300 cap before the
+  model writes a word over budget, independent of any markup. Tightened to
+  27 words, chosen the same way the already-correct `marketing_task`
+  fields turned out to sit (~21–23% margin at worst observed density,
+  confirmed by this same measurement, not by the original ad-hoc "safely
+  under 400" reasoning). `recent_news.summary` wasn't independently broken
+  — 40 words at its worst observed density (7.17) still fit under 300, with
+  thin (4.4%) margin — but was tightened to 33 words anyway, to the same
+  margin standard, given the small sample (n=7) this measurement rests on.
+  `research_brief_precheck()`'s existing `check_len()` already enforces
+  both caps regardless of what the model writes; this fix is about making
+  the *prompt's* word budget numerically honest about what it actually
+  produces, not a new enforcement mechanism. Golden-set case `rb05` proves
+  the old budget was inconsistent with the cap on realistic prose alone
+  (no markup); `rg02` proves the new budgets hold real margin even written
+  close to their own limit. **What this doesn't claim:** no live run has
+  exercised the new budgets yet — the measurement is real, the fix is
+  fixture-verified, and the next live batch is what actually tests whether
+  27/33 words changes what the model writes, not just what fits if it
+  complies.
 - **Two distinct bug classes have now recurred independently across both
   AgentDesk and [Crux](https://github.com/josephmpeluso/crux), written weeks
   apart.** The denylist-leak bullet above already names one (banned-phrase

@@ -395,6 +395,53 @@ research_case("rs03", "good", None, "none", _markup_under_cap,
               "isn't conditional on whether the field happens to be near its limit.")
 
 
+# ------------------------------------------- word-budget/char-cap consistency
+# Measured 2026-09-01 against the 7 real research_brief summaries this
+# project has: what_they_sell.summary's old 40-word budget produces 300+
+# characters at even the *mean* observed density (7.78 chars/word) — no
+# markup involved, just realistic technical prose. Budget tightened to 27
+# words (recent_news.summary to 33, same margin standard, though its old
+# budget wasn't independently broken). rb05 proves the old budget was really
+# broken; rg02 proves the new one has real room even close to its own limit.
+
+def _dense_prose_over_cap(b):
+    b["what_they_sell"]["summary"] = (
+        "Harborview Instruments designs, manufactures, and services benchtop clinical "
+        "chemistry analyzers for mid-size hospital laboratories and independent reference "
+        "labs, monetizing primarily through recurring consumable reagent cartridge "
+        "subscriptions rather than one-time instrument hardware margin, with service "
+        "contracts sold separately to institutional buyers."
+    )  # 40 words (the old budget) at realistic density -> 358 chars, over the 300 cap
+
+
+research_case("rb05", "bad", "summary_word_budget_inconsistent_with_cap", "code",
+              _dense_prose_over_cap,
+              "No markup involved — real technical prose at the old 40-word budget, "
+              "measured density. 358 characters against a 300-char cap. Proves the old "
+              "word budget was mathematically inconsistent with the schema cap, "
+              "independent of the citation-markup issue.")
+
+
+def _tightened_budgets_still_fit(b):
+    b["what_they_sell"]["summary"] = (
+        "Harborview Instruments designs and manufactures benchtop clinical chemistry "
+        "analyzers for mid-size hospital labs and reference labs, monetized through "
+        "recurring reagent cartridge subscriptions rather than instrument margin."
+    )  # 26 words, close to the new 27-word budget -> 223 chars
+    b["recent_news"]["summary"] = (
+        "Harborview received FDA 510(k) clearance in July 2026 for the HV-220 analyzer, "
+        "its first platform cleared for pediatric sample volumes across the full assay "
+        "menu, expanding its addressable base of hospital labs."
+    )  # 32 words, close to the new 33-word budget -> 211 chars
+
+
+research_case("rg02", "good", None, "none", _tightened_budgets_still_fit,
+              "Both summaries written close to their new, tighter word budgets (26/27 "
+              "and 32/33 words) at realistic density. Must pass with real margin, not "
+              "just barely — guards against the tightened budget being too tight to "
+              "actually use.")
+
+
 if __name__ == "__main__":
     # Self-check the three sanitization cases directly against the real
     # function, not just via the eval harness — concrete proof the strip
@@ -425,6 +472,25 @@ if __name__ == "__main__":
     clean03, hits03 = sanitize_research_brief(rs03)
     assert "recent_news.summary" in hits03, "rs03: sanitize didn't fire even though markup is present"
     assert "cite index" not in clean03["recent_news"]["summary"], "rs03: markup survived sanitization"
+
+    # Word-budget/char-cap consistency cases: verify the numbers, not just
+    # the pass/fail outcome — a case that "happens" to pass or fail proves
+    # nothing about *why*.
+    rb05 = next(c for c in CASES if c["id"] == "rb05")["brief"]
+    rb05_summary = rb05["what_they_sell"]["summary"]
+    rb05_words = len(rb05_summary.split())
+    assert rb05_words <= 41, f"rb05 is supposed to represent the old ~40-word budget, but it's {rb05_words} words"
+    assert len(rb05_summary) > 300, f"rb05 is supposed to breach the 300-char cap on realistic prose alone, but it's only {len(rb05_summary)} chars"
+    ok_rb05, problems_rb05 = research_brief_precheck(rb05)
+    assert not ok_rb05, "rb05: precheck should reject this (over cap on realistic prose, no markup)"
+
+    rg02 = next(c for c in CASES if c["id"] == "rg02")["brief"]
+    wts_words = len(rg02["what_they_sell"]["summary"].split())
+    news_words = len(rg02["recent_news"]["summary"].split())
+    assert wts_words <= 27, f"rg02 what_they_sell.summary is supposed to fit the new 27-word budget, but it's {wts_words} words"
+    assert news_words <= 33, f"rg02 recent_news.summary is supposed to fit the new 33-word budget, but it's {news_words} words"
+    ok_rg02, problems_rg02 = research_brief_precheck(rg02)
+    assert ok_rg02, f"rg02: precheck should pass at the new budgets, but got: {problems_rg02}"
 
     out = Path(__file__).parent / "golden_set.jsonl"
     with out.open("w", encoding="utf-8") as fh:
